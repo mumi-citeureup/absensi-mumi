@@ -1,0 +1,2077 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi Pengajian - MUMI Citeureup</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f4ee; --card:#ffffff; --ink:#1f2a22; --ink-soft:#5c6a5f;
+    --line:#e1ddd0; --accent:#2f6b4f; --accent-dark:#1e4a35; --accent-soft:#e6efe8;
+    --warn:#b3691c; --warn-soft:#faeee0; --bad:#a13c3c; --bad-soft:#f8e8e6;
+    --gray:#8a8a86; --gray-soft:#eeede8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--ink); padding-bottom:60px;
+  }
+  header{
+    background:var(--accent-dark); color:#fff; padding:18px 16px 14px;
+    position:sticky; top:0; z-index:20;
+  }
+  header h1{margin:0; font-size:18px; font-weight:600;}
+  header p{margin:2px 0 0; font-size:12.5px; color:#cfe3d6;}
+  nav{
+    display:flex; gap:6px; margin-top:14px; background:rgba(255,255,255,0.12);
+    padding:4px; border-radius:10px;
+  }
+  nav button{
+    flex:1; padding:9px 6px; border:none; background:transparent; color:#e4efe8;
+    font-size:13px; font-weight:600; border-radius:8px; cursor:pointer;
+  }
+  nav button.active{background:#fff; color:var(--accent-dark);}
+  main{max-width:900px; margin:0 auto; padding:16px;}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:16px; margin-bottom:14px;
+  }
+  .card h2{margin:0 0 4px; font-size:15px;}
+  .card .sub{color:var(--ink-soft); font-size:12.5px; margin:0 0 12px;}
+  select, input[type=date], input[type=text]{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px;
+    font-size:14px; background:#fff; color:var(--ink);
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .row > *{flex:1; min-width:140px;}
+  button.btn{
+    padding:10px 16px; border-radius:9px; border:1px solid var(--accent);
+    background:var(--accent); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  button.btn.ghost{background:#fff; color:var(--accent-dark);}
+  button.btn.small{padding:6px 10px; font-size:12.5px;}
+  button.btn:active{transform:scale(0.98);}
+  .statgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:10px;}
+  .stat{background:var(--gray-soft); border-radius:10px; padding:10px 12px;}
+  .stat .num{font-size:22px; font-weight:700; line-height:1.1;}
+  .stat .lbl{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .stat.hadir{background:var(--accent-soft);} .stat.hadir .num{color:var(--accent-dark);}
+  .stat.izin{background:var(--warn-soft);} .stat.izin .num{color:var(--warn);}
+  .stat.sakit{background:#eae6f6;} .stat.sakit .num{color:#5b3fa0;}
+  .stat.alpa{background:var(--bad-soft);} .stat.alpa .num{color:var(--bad);}
+
+  #reader{width:100%; max-width:420px; margin:0 auto; border-radius:12px; overflow:hidden;}
+  #scanFeedback{
+    margin-top:12px; padding:14px; border-radius:11px; text-align:center;
+    font-size:14px; min-height:20px;
+  }
+  #scanFeedback.ok{background:var(--accent-soft); color:var(--accent-dark);}
+  #scanFeedback.err{background:var(--bad-soft); color:var(--bad);}
+  #scanFeedback .nm{font-size:17px; font-weight:700; margin-bottom:2px;}
+
+  .plist{max-height:340px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; margin-top:10px;}
+  .prow{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:9px 12px; border-bottom:1px solid var(--line); font-size:13.5px;
+  }
+  .prow:last-child{border-bottom:none;}
+  .prow .nm{font-weight:600;} .prow .kl{color:var(--ink-soft); font-size:12px;}
+  .badge{font-size:11px; padding:3px 9px; border-radius:20px; font-weight:600; white-space:nowrap;}
+  .badge.hadir{background:var(--accent-soft); color:var(--accent-dark);}
+  .badge.izin{background:var(--warn-soft); color:var(--warn);}
+  .badge.sakit{background:#eae6f6; color:#5b3fa0;}
+  .badge.alpa{background:var(--bad-soft); color:var(--bad);}
+  .badge.belum{background:var(--gray-soft); color:var(--gray);}
+  .minibtns{display:flex; gap:4px;}
+  .minibtns button{
+    border:1px solid var(--line); background:#fff; padding:4px 8px; border-radius:7px;
+    font-size:11px; cursor:pointer; font-weight:600;
+  }
+  .minibtns button.h{color:var(--accent-dark);} .minibtns button.i{color:var(--warn);}
+  .minibtns button.s{color:#5b3fa0;} .minibtns button.a{color:var(--bad);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  table th, table td{padding:8px 8px; border-bottom:1px solid var(--line); text-align:left;}
+  table th{color:var(--ink-soft); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.02em;}
+
+  .qrgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;}
+  .qrcard{
+    border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center;
+    background:#fff;
+  }
+  .qrcard .qrbox{display:flex; justify-content:center; margin-bottom:6px;}
+  .qrcard .nm{font-size:12px; font-weight:700; line-height:1.25;}
+  .qrcard .kl{font-size:10.5px; color:var(--ink-soft);}
+  .qrcard .no{font-size:10px; color:var(--gray); margin-top:2px;}
+
+  .kelompok-title{
+    font-size:13px; font-weight:700; color:var(--accent-dark); margin:18px 0 8px;
+    padding-bottom:4px; border-bottom:2px solid var(--accent-soft);
+  }
+  .kelompok-title:first-child{margin-top:0;}
+
+  .hint{font-size:12px; color:var(--ink-soft); background:var(--gray-soft); border-radius:9px; padding:10px 12px; margin-top:10px;}
+  .pct{font-size:34px; font-weight:800; color:var(--accent-dark);}
+  .pctwrap{display:flex; align-items:baseline; gap:8px;}
+
+  @media print{
+    header, nav, .noprint{display:none !important;}
+    body{background:#fff; padding:0;}
+    main{max-width:100%; padding:0;}
+    .card{border:none; padding:0; box-shadow:none;}
+  }
+
+  /* login gate */
+  #gate{
+    position:fixed; inset:0; background:var(--accent-dark); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  #gate .box{
+    background:#fff; border-radius:16px; padding:26px 24px; max-width:340px; width:100%;
+    text-align:center;
+  }
+  #gate .box h2{margin:0 0 4px; font-size:17px; color:var(--ink);}
+  #gate .box p{margin:0 0 16px; font-size:12.5px; color:var(--ink-soft);}
+  #gate input{margin-bottom:10px; text-align:center; letter-spacing:2px;}
+  #gate .err{color:var(--bad); font-size:12px; min-height:16px; margin-bottom:6px;}
+  #btnLogout{
+    position:fixed; bottom:14px; right:14px; z-index:15; padding:8px 12px;
+    border-radius:9px; border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+    font-size:12px; cursor:pointer;
+  }
+
+  .jabatan-badge{
+    display:inline-block; font-size:9.5px; font-weight:700; padding:2px 7px;
+    border-radius:20px; background:var(--warn-soft); color:var(--warn); margin-top:3px;
+  }
+  .qrcard{position:relative;}
+  .qrcard .dl{
+    margin-top:6px; width:100%; padding:5px 0; font-size:11px; border-radius:7px;
+    border:1px solid var(--line); background:#fff; color:var(--accent-dark); cursor:pointer; font-weight:600;
+  }
+  .pengurus-row{
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    padding:10px 4px; border-bottom:1px solid var(--line); font-size:13.5px;
+  }
+  .pengurus-row:last-child{border-bottom:none;}
+  .pengurus-row .jab{font-weight:700; color:var(--accent-dark); min-width:110px;}
+  .pengurus-row .nm{font-weight:600;}
+  .pengurus-row .kl{color:var(--ink-soft); font-size:12px;}
+  .sop ol, .sop ul{padding-left:20px; margin:6px 0;}
+  .sop li{margin-bottom:6px; font-size:13.5px; line-height:1.5;}
+  .sop h3{font-size:13.5px; margin:16px 0 6px; color:var(--accent-dark);}
+
+  .form-group{margin-bottom:12px;}
+  .form-group label{display:block; font-size:12px; font-weight:600; color:var(--ink); margin-bottom:4px;}
+  .form-group input, .form-group select{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; font-size:14px;}
+  .form-group.row{display:flex; gap:10px;}
+  .form-group.row > div{flex:1; margin-bottom:0;}
+  .preview-qr{
+    background:#fff; border:2px solid var(--line); border-radius:14px; padding:16px;
+    text-align:center; margin-top:14px;
+  }
+  .preview-qr .qrbox{width:140px; height:140px; margin:0 auto 10px; display:flex; align-items:center; justify-content:center;}
+  .preview-qr .nm{font-size:14px; font-weight:700; margin-bottom:2px;}
+  .preview-qr .kl{font-size:12px; color:var(--ink-soft);}
+  .preview-qr .id{font-size:11px; color:var(--gray); margin-top:4px;}
+  .success-msg{background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; padding:12px 14px; color:var(--accent-dark); font-size:13px; margin-bottom:12px; display:none;}
+  .success-msg.show{display:block;}
+
+  .edit-search{margin-bottom:14px;}
+  .edit-result{background:var(--gray-soft); border-radius:10px; padding:10px; margin-top:8px; max-height:280px; overflow-y:auto;}
+  .edit-item{
+    background:#fff; padding:10px 12px; border-radius:8px; margin-bottom:6px; cursor:pointer;
+    border:1px solid var(--line); transition:all 0.15s;
+  }
+  .edit-item:hover{background:var(--accent-soft); border-color:var(--accent);}
+  .edit-item .nm{font-weight:600; font-size:13.5px;}
+  .edit-item .info{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .edit-form{background:#fff; border:2px solid var(--line); border-radius:12px; padding:16px; margin-top:12px; display:none;}
+  .edit-form.show{display:block;}
+  .edit-form h3{margin:0 0 12px; font-size:14px; color:var(--ink);}
+  .edit-form .form-group input, .edit-form .form-group select{padding:9px 11px; font-size:13px;}
+  .btn-edit-row{display:flex; gap:8px; margin-top:14px;}
+  .btn-edit-row button{flex:1;}
+  .btn-danger{background:var(--bad); border-color:var(--bad);}
+  .warn-msg{background:var(--bad-soft); border:1px solid var(--bad); border-radius:10px; padding:10px 12px; color:var(--bad); font-size:12px; margin-top:10px; display:none;}
+  .warn-msg.show{display:block;}
+
+    position:fixed; top:12px; left:50%; transform:translateX(-50%) translateY(-140%);
+    width:min(92vw, 380px); z-index:200; border-radius:12px; padding:14px 16px;
+    text-align:center; box-shadow:0 4px 18px rgba(0,0,0,0.22);
+    transition:transform 0.25s ease; pointer-events:none;
+  }
+  #scanToast.show{ transform:translateX(-50%) translateY(0); }
+  #scanToast.ok{ background:var(--accent-dark); color:#fff; }
+  #scanToast.err{ background:var(--bad); color:#fff; }
+  #scanToast .nm{ font-size:18px; font-weight:700; margin-bottom:2px; }
+  #scanToast .sm{ font-size:12.5px; opacity:0.9; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="box">
+    <h2>Khusus Pengurus MUMI Desa</h2>
+    <p>Masukkan kata sandi pengurus untuk membuka aplikasi absensi.</p>
+    <div class="err" id="gateErr"></div>
+    <input type="password" id="gatePass" placeholder="Kata sandi">
+    <button class="btn" style="width:100%" id="btnGateEnter">Masuk</button>
+  </div>
+</div>
+<button id="btnLogout" class="noprint" style="display:none">Keluar</button>
+<div id="scanToast" class="noprint"></div>
+
+<header>
+  <h1>Absensi Pengajian MUMI Citeureup</h1>
+  <p>Scan barcode &middot; rekap otomatis &middot; gratis, jalan langsung di browser</p>
+  <nav class="noprint">
+    <button data-tab="scan" class="active">📱 Scan Absensi</button>
+    <button data-tab="kelompok">👥 MUMI Kelompok</button>
+    <button data-tab="rekap">📋 Rekap Desa</button>
+    <button data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
+    <button data-tab="dashboard">📈 Dashboard</button>
+    <button data-tab="cetak">🖨️ Cetak Barcode</button>
+    <button data-tab="daftar">➕ Daftar Anggota</button>
+    <button data-tab="edit">✏️ Edit Data</button>
+    <button data-tab="struktur">⚙️ Struktur Pengurus</button>
+    <button data-tab="admin">ℹ️ Admin & WhatsApp</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- TAB CETAK -->
+<section id="tab-cetak">
+  <div class="card noprint">
+    <h2>Cetak kartu barcode jamaah</h2>
+    <p class="sub">Setiap orang punya QR unik (119 orang). Cetak sekali, pakai terus tiap pengajian.</p>
+    <div class="row">
+      <select id="filterKelompok"></select>
+      <button class="btn ghost" id="btnPrintCetak">Cetak halaman ini</button>
+      <button class="btn" id="btnZipAll">Unduh semua (ZIP, untuk share WA)</button>
+    </div>
+    <div class="hint" id="zipHint" style="display:none">Menyiapkan file, mohon tunggu...</div>
+  </div>
+  <div class="card" id="cetakArea"></div>
+</section>
+
+<!-- TAB SCAN -->
+<section id="tab-scan" style="display:none">
+  <div class="card noprint">
+    <h2>Sesi pengajian</h2>
+    <p class="sub">Pilih tanggal, lalu mulai scan. Semua tercatat jam hadirnya otomatis.</p>
+    <div class="row">
+      <input type="date" id="sesiTanggal">
+      <input type="text" id="sesiNama" placeholder="Nama kegiatan (opsional), contoh: Pengajian Rutin">
+    </div>
+    <div class="statgrid" id="scanStats"></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>Scan barcode</h2>
+    <p class="sub">Arahkan kamera ke QR jamaah. Status otomatis menjadi <b>Hadir</b> dengan jam saat ini.</p>
+    <div id="reader"></div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn" id="btnStartScan">Mulai kamera</button>
+      <button class="btn ghost" id="btnStopScan" style="display:none">Hentikan kamera</button>
+    </div>
+    <div id="scanFeedback"></div>
+    <div class="hint">Tidak ada kamera? Pakai pencarian manual di bawah untuk absen Hadir, Izin, atau Sakit.</div>
+  </div>
+
+  <div class="card noprint">
+    <h2>Absen manual / koreksi</h2>
+    <p class="sub">Cari nama, lalu pilih status. Berguna untuk Izin, Sakit, atau kalau barcode tidak terbaca.</p>
+    <input type="text" id="searchManual" placeholder="Ketik nama...">
+    <div class="plist" id="manualList"></div>
+  </div>
+</section>
+
+<!-- TAB REKAP -->
+<section id="tab-rekap" style="display:none">
+  <div class="card noprint">
+    <h2>Pilih sesi</h2>
+    <select id="rekapSesiSelect"></select>
+  </div>
+
+  <div class="card">
+    <h2 id="rekapJudul">Rekap kehadiran</h2>
+    <p class="sub" id="rekapSub"></p>
+    <div class="pctwrap">
+      <div class="pct" id="rekapPct">0%</div>
+      <div style="color:var(--ink-soft); font-size:12.5px;">tingkat kehadiran</div>
+    </div>
+    <div class="statgrid" id="rekapStats"></div>
+    <div class="row noprint" style="margin-top:14px;">
+      <button class="btn ghost" id="btnTutupSesi">Tutup sesi (sisanya jadi Alpa)</button>
+      <button class="btn ghost" id="btnCetakRekap">Cetak rekap</button>
+      <button class="btn ghost" id="btnCsv">Unduh CSV</button>
+    </div>
+    <div class="row noprint" style="margin-top:8px;">
+      <button class="btn danger" id="btnResetSesi" style="background:var(--bad);border-color:var(--bad);">🔄 Reset Sesi Ini (Libur/Uji Coba)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Rekap per kelompok</h2>
+    <div style="overflow-x:auto;">
+      <table id="tabelKelompok"></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Detail kehadiran</h2>
+    <div class="row noprint">
+      <select id="filterStatus">
+        <option value="">Semua status</option>
+        <option value="Hadir">Hadir</option>
+        <option value="Izin">Izin</option>
+        <option value="Sakit">Sakit</option>
+        <option value="Alpa">Alpa / tanpa keterangan</option>
+        <option value="Belum">Belum absen</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto; margin-top:10px;">
+      <table id="tabelDetail"></table>
+    </div>
+  </div>
+</section>
+
+<!-- TAB DAFTAR ANGGOTA BARU -->
+<section id="tab-daftar" style="display:none">
+  <div class="card">
+    <h2>Daftar anggota baru</h2>
+    <p class="sub">Input data MUMI baru, otomatis dapat nomor ID dan QR code. Langsung bisa di-scan untuk absensi pengajian ini.</p>
+    
+    <div class="success-msg noprint" id="msgSuccess"></div>
+    
+    <div class="form-group row">
+      <div>
+        <label>Nomor ID (auto)</label>
+        <input type="text" id="fldNewId" readonly style="background:#f6f4ee; color:#8a8a86;">
+      </div>
+      <div>
+        <label>Nama lengkap *</label>
+        <input type="text" id="fldNewNama" placeholder="cth: Ahmad Fatah">
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <div>
+        <label>Kelompok *</label>
+        <select id="fldNewKelompok">
+          <option value="">-- Pilih kelompok --</option>
+          <option value="Al Muhajirin">Al Muhajirin</option>
+          <option value="Bojong Koneng">Bojong Koneng</option>
+          <option value="Kamurang">Kamurang</option>
+          <option value="Sanja">Sanja</option>
+          <option value="Sentul">Sentul</option>
+          <option value="Tarikolot">Tarikolot</option>
+        </select>
+      </div>
+      <div>
+        <label>Jenis Kelamin</label>
+        <select id="fldNewJK">
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row noprint">
+      <button class="btn" id="btnAddAnggota">Buat & Preview QR</button>
+      <button class="btn ghost" id="btnClearForm">Bersihkan</button>
+    </div>
+  </div>
+
+  <div id="previewNewQr"></div>
+</section>
+
+<!-- TAB EDIT DATA ANGGOTA -->
+<section id="tab-edit" style="display:none">
+  <div class="card">
+    <h2>Edit data anggota</h2>
+    <p class="sub">Cari anggota, edit nama/kelompok, atau hapus kalau pindah/keluar. Riwayat kehadiran lama tetap tersimpan.</p>
+    
+    <div class="success-msg noprint" id="msgEditSuccess"></div>
+    <div class="warn-msg noprint" id="msgEditWarn"></div>
+
+    <div class="edit-search">
+      <input type="text" id="editSearch" placeholder="Cari nama anggota...">
+      <div class="edit-result" id="editSearchResult"></div>
+    </div>
+
+    <div class="edit-form" id="editForm">
+      <h3 id="editFormTitle">Edit data</h3>
+      
+      <div class="form-group row">
+        <div>
+          <label>Nomor ID (tidak bisa diubah)</label>
+          <input type="text" id="editId" readonly style="background:#f6f4ee; color:#8a8a86;">
+        </div>
+        <div>
+          <label>Nama lengkap</label>
+          <input type="text" id="editNama">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <div>
+          <label>Kelompok</label>
+          <select id="editKelompok">
+            <option value="Al Muhajirin">Al Muhajirin</option>
+            <option value="Bojong Koneng">Bojong Koneng</option>
+            <option value="Kamurang">Kamurang</option>
+            <option value="Sanja">Sanja</option>
+            <option value="Sentul">Sentul</option>
+            <option value="Tarikolot">Tarikolot</option>
+          </select>
+        </div>
+        <div>
+          <label>Jenis Kelamin</label>
+          <select id="editJK">
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tanggal Lahir (opsional)</label>
+        <input type="date" id="editTTL" placeholder="YYYY-MM-DD">
+      </div>
+
+      <div class="btn-edit-row noprint">
+        <button class="btn" id="btnSaveEdit">Simpan perubahan</button>
+        <button class="btn ghost" id="btnCancelEdit">Batal</button>
+        <button class="btn btn-danger" id="btnDeleteAnggota">Hapus anggota</button>
+      </div>
+
+      <div class="warn-msg" id="msgDeleteConfirm">
+        ⚠️ Hapus akan menghilangkan dari roster aktif, tapi riwayat kehadiran lama tetap tersimpan. Yakin?
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-danger" style="flex:1; font-size:12px;" id="btnConfirmDelete">Ya, hapus</button>
+          <button class="btn ghost" style="flex:1; font-size:12px;" id="btnCancelDelete">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB PENGURUS -->
+<section id="tab-pengurus" style="display:none">
+  <div class="card">
+    <h2>Struktur Pengurus MUMI Desa</h2>
+    <p class="sub">Data ini juga menandai barcode pengurus di tab Cetak Barcode.</p>
+    <div id="pengurusList"></div>
+  </div>
+
+  <div class="card sop">
+    <h2>SOP: Anggota pindah / keluar / masuk baru</h2>
+    <p class="sub">Ikuti langkah ini supaya barcode selalu sesuai dengan anggota yang aktif.</p>
+
+    <h3>1. Ada MUMI baru masuk</h3>
+    <ol>
+      <li>Catat nama lengkap, kelompok, dan data dasar anggota baru di database utama (file Excel database MUMI).</li>
+      <li>Kasih dia nomor ID baru (lanjutan nomor terakhir, jangan pakai ulang nomor bekas orang lain).</li>
+      <li>Minta pengurus (Sekertaris/Bendahara) untuk update file aplikasi ini: tambahkan satu baris data di daftar anggota (ROSTER), lalu simpan ulang.</li>
+      <li>Buka tab Cetak Barcode, cari nama anggota baru, unduh barcodenya, lalu kirim ke yang bersangkutan lewat WA.</li>
+    </ol>
+
+    <h3>2. Ada MUMI pindah kelompok</h3>
+    <ol>
+      <li>Update kolom "Nama Kelompok" anggota tersebut di database dan di aplikasi (ID tetap sama, tidak perlu barcode baru).</li>
+      <li>Kalau anggota ingin, boleh cetak ulang kartu barcode supaya label kelompoknya sesuai yang baru, ID QR-nya tetap sama seperti sebelumnya jadi riwayat kehadiran lama tidak hilang.</li>
+    </ol>
+
+    <h3>3. Ada MUMI keluar / pindah desa</h3>
+    <ol>
+      <li>Jangan hapus datanya dari histori kehadiran lama (biar rekap lama tetap akurat).</li>
+      <li>Tandai statusnya "non-aktif" di database utama, dan hapus baris orang tersebut dari daftar anggota (ROSTER) di aplikasi supaya tidak ikut dihitung di sesi berikutnya.</li>
+      <li>Barcode lama otomatis tidak berlaku lagi begitu datanya dihapus dari aplikasi.</li>
+    </ol>
+
+    <h3>4. Barcode hilang / rusak / tertukar</h3>
+    <ol>
+      <li>Tidak perlu ganti ID. Buka tab Cetak Barcode, cari namanya, unduh ulang, cetak lagi.</li>
+      <li>ID lama tetap dipakai supaya rekap kehadiran sebelumnya tidak terputus.</li>
+    </ol>
+
+    <h3>5. Siapa yang boleh melakukan perubahan ini?</h3>
+    <ul>
+      <li>Perubahan data anggota (baru/pindah/keluar) dilakukan oleh Sekertaris, dikoordinasikan dengan Ketua/Wakil.</li>
+      <li>Kata sandi akses aplikasi ini hanya dibagikan ke pengurus, jangan disebar ke MUMI biasa.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>📱 Hubungi Admin</h2>
+    <p class="sub">Untuk daftar anggota baru, edit data, atau pertanyaan lainnya</p>
+    <a href="https://wa.me/6285641464205?text=Halo%20admin%20MUMI%20Citeureup.%20Saya%20ingin%20daftar%20anggota%20baru%20atau%20edit%20data%20anggota" target="_blank" style="display:block; text-align:center; background:var(--accent); color:#fff; padding:14px; border-radius:9px; text-decoration:none; font-weight:600; margin-bottom:10px; font-size:14px;">
+      📱 Chat WhatsApp (085641464205)
+    </a>
+  </div>
+
+  <!-- TAB MUMI KELOMPOK -->
+</section>
+
+<section id="tab-kelompok" style="display:none">
+  <div class="card">
+    <h2>👥 MUMI Kelompok - Pengajian Mingguan</h2>
+    <p class="sub">Scan absensi per kelompok, data tersimpan terpisah per kelompok & tanggal</p>
+    <div class="row">
+      <select id="kelompokSelect">
+        <option value="">-- Pilih Kelompok --</option>
+        <option value="Al Muhajirin">Al Muhajirin</option>
+        <option value="Bojong Koneng">Bojong Koneng</option>
+        <option value="Kamurang">Kamurang</option>
+        <option value="Sanja">Sanja</option>
+        <option value="Sentul">Sentul</option>
+        <option value="Tarikolot">Tarikolot</option>
+      </select>
+      <input type="date" id="kelTanggal">
+    </div>
+    <input type="text" id="kelNama" placeholder="Nama kegiatan (opsional)" style="margin-top:8px;">
+    <div class="statgrid" id="kelStats" style="display:none;"></div>
+  </div>
+
+  <div class="card noprint" id="kelScanCard" style="display:none">
+    <h2>📷 Scan Barcode</h2>
+    <div class="row">
+      <button class="btn" id="btnKelStartScan">Mulai kamera</button>
+      <button class="btn ghost" id="btnKelStopScan" style="display:none;">Hentikan kamera</button>
+    </div>
+    <div id="kelReader" style="margin-top:10px;"></div>
+    <div id="kelFeedback" class="feedback"></div>
+  </div>
+
+  <div class="card noprint" id="kelManualCard" style="display:none">
+    <h2>✍️ Absen Manual</h2>
+    <input type="text" id="kelSearchManual" placeholder="Cari nama...">
+    <div class="plist" id="kelManualList"></div>
+  </div>
+
+  <div class="card noprint" id="kelRekapCard" style="display:none">
+    <h2>📋 Rekap Sesi Ini</h2>
+    <div class="row">
+      <button class="btn ghost" id="btnKelTutupSesi">Tutup sesi (sisanya jadi Alpa)</button>
+      <button class="btn danger" id="btnKelResetSesi" style="background:var(--bad);border-color:var(--bad);">🔄 Reset Sesi</button>
+    </div>
+    <div id="kelRekapDetail" style="margin-top:12px;"></div>
+  </div>
+</section>
+
+<!-- TAB REKAP KELOMPOK BULANAN -->
+<section id="tab-rekap-kelompok" style="display:none">
+  <div class="card">
+    <h2>📊 Rekap Bulanan MUMI Kelompok</h2>
+    <p class="sub">Lihat statistik kehadiran per kelompok, per bulan (gabungan semua sesi mingguan)</p>
+    <div class="row">
+      <select id="rekapKelKelompok">
+        <option value="">-- Semua Kelompok --</option>
+        <option value="Al Muhajirin">Al Muhajirin</option>
+        <option value="Bojong Koneng">Bojong Koneng</option>
+        <option value="Kamurang">Kamurang</option>
+        <option value="Sanja">Sanja</option>
+        <option value="Sentul">Sentul</option>
+        <option value="Tarikolot">Tarikolot</option>
+      </select>
+      <select id="rekapKelBulan"></select>
+    </div>
+    <div id="rekapKelContent" style="margin-top:12px;"></div>
+  </div>
+</section>
+
+<!-- TAB STRUKTUR PENGURUS -->
+<section id="tab-struktur" style="display:none">
+  <div class="card">
+    <h2>⚙️ Struktur Pengurus MUMI Kelompok</h2>
+    <p class="sub">Input nama pengurus untuk setiap kelompok. Data tersimpan otomatis.</p>
+    <div id="strukturContent"></div>
+  </div>
+</section>
+
+<!-- TAB ADMIN & WHATSAPP -->
+<section id="tab-admin" style="display:none">
+  <div class="card">
+    <h2>ℹ️ Admin & WhatsApp</h2>
+    <p class="sub">Setup Google Sheets sync, hubungi admin, atau export data</p>
+    
+    <h3 style="color:var(--accent-dark);margin:14px 0 10px;font-size:14px;">🔗 Google Sheets Sync</h3>
+    <input type="text" id="sheetUrl" placeholder="Paste Google Apps Script URL (dari Deploy Web App)" style="margin-bottom:8px;">
+    <button class="btn" id="btnTestSheet" style="width:100%;margin-bottom:10px;">✔️ Uji Koneksi Google Sheets</button>
+    <div class="hint">📌 Setup: buat Google Sheet → Tools > Script Editor → paste kode dari GOOGLE_APPS_SCRIPT.gs → Deploy Web App → copy URL → paste di sini.</div>
+    
+    <h3 style="color:var(--accent-dark);margin:14px 0 10px;font-size:14px;">📱 Chat Admin</h3>
+    <a href="https://wa.me/6285641464205?text=Halo%20admin%20MUMI%20Citeureup.%20Saya%20ingin%20daftar%2Fedit%20anggota%20atau%20laporkan%20masalah" target="_blank" style="display:block; text-align:center; background:var(--accent); color:#fff; padding:14px; border-radius:9px; text-decoration:none; font-weight:600; margin-bottom:12px; font-size:14px;">
+      📱 Chat WhatsApp (085641464205)
+    </a>
+    
+    <h3 style="color:var(--accent-dark);margin:14px 0 10px;font-size:14px;">💾 Backup Data</h3>
+    <button class="btn ghost" id="btnExportFinal" style="width:100%;margin-bottom:8px;">📥 Export Semua Data</button>
+    <button class="btn ghost" id="btnLogout" style="width:100%;">🚪 Keluar</button>
+  </div>
+</section>
+
+<!-- TAB DASHBOARD -->
+<section id="tab-dashboard" style="display:none">
+  <div class="card noprint">
+    <h2>📈 Dashboard Kehadiran</h2>
+    <p class="sub">Grafik trend kehadiran bulan ke bulan - MUMI Desa & MUMI Kelompok</p>
+    <button class="btn" id="btnDashboardPdf" style="width:100%;">🖨️ Cetak / Simpan PDF untuk Musyawarah</button>
+  </div>
+
+  <div class="card" id="dashboardPrintArea">
+    <div id="dashboardHeader" style="text-align:center;margin-bottom:16px;">
+      <h2 style="margin:0;">📊 Laporan Kehadiran MUMI Citeureup</h2>
+      <p style="color:var(--ink-soft);font-size:12px;" id="dashboardTanggalCetak"></p>
+    </div>
+
+    <h3 style="color:var(--accent-dark);font-size:14px;">🏘️ Trend Kehadiran MUMI Desa (Bulanan)</h3>
+    <div class="statgrid" id="dashboardDesaSummary" style="margin-bottom:10px;"></div>
+    <canvas id="chartDesaTrend" height="120"></canvas>
+
+    <h3 style="color:var(--accent-dark);font-size:14px;margin-top:24px;">👥 Trend Kehadiran MUMI Kelompok (Bulanan, Rata-rata Semua Kelompok)</h3>
+    <div class="statgrid" id="dashboardKelSummary" style="margin-bottom:10px;"></div>
+    <canvas id="chartKelTrend" height="120"></canvas>
+
+    <h3 style="color:var(--accent-dark);font-size:14px;margin-top:24px;">📊 Perbandingan Antar Kelompok (Bulan Ini)</h3>
+    <canvas id="chartKelCompare" height="140"></canvas>
+
+    <div id="dashboardTableWrap" style="margin-top:20px;"></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+const ROSTER=[{i:1,k:'Al Muhajirin',n:'Nourazmil Birrul Akhyar'},{i:2,k:'Al Muhajirin',n:'Fuad Suaidy'},{i:3,k:'Al Muhajirin',n:'Naufal Hassan'},{i:4,k:'Al Muhajirin',n:'Rifqi Fadholi Noor'},{i:5,k:'Al Muhajirin',n:'Nourman Hizqil Salam'},{i:6,k:'Al Muhajirin',n:'Nizar Almas Fathani'},{i:7,k:'Al Muhajirin',n:'Ahmad Adi Putra'},{i:8,k:'Al Muhajirin',n:'Muhammad Izatu Muttaqin'},{i:9,k:'Al Muhajirin',n:'Maulana Mudzakir Jamil'},{i:10,k:'Al Muhajirin',n:'Muhammad Fajar Nurhasan'},{i:11,k:'Al Muhajirin',n:'Naufal Deandra'},{i:12,k:'Al Muhajirin',n:'Adhima Ibnu Shofa'},{i:13,k:'Al Muhajirin',n:'Ikhwatun Tamimi'},{i:14,k:'Al Muhajirin',n:'Diana Alfi Fariza'},{i:15,k:'Al Muhajirin',n:'Octafia Anggi Fratista'},{i:16,k:'Al Muhajirin',n:'Arinta Prameswari'},{i:17,k:'Al Muhajirin',n:'Winda Nurfaiza'},{i:18,k:'Al Muhajirin',n:'Norasauri Lathifa Rizqy'},{i:19,k:'Al Muhajirin',n:'Devita Larasati'},{i:20,k:'Al Muhajirin',n:'Dini Imelyani'},{i:21,k:'Al Muhajirin',n:'Ferna Lis Nurfadhila'},{i:22,k:'Al Muhajirin',n:'Naura Aisha Farrin'},{i:23,k:'Al Muhajirin',n:'Amalia Fitri Ramadhani'},{i:24,k:'Al Muhajirin',n:'Afwa Inandita'},{i:25,k:'Al Muhajirin',n:'Alfira Pramesti'},{i:26,k:'Al Muhajirin',n:'Chika Mafayza'},{i:27,k:'Bojong Koneng',n:'Rizki Aditiya Kurniawan'},{i:28,k:'Bojong Koneng',n:'Alfito Noval Rivaldo'},{i:29,k:'Bojong Koneng',n:'Al Fawwaz Juliansyah Wibowo'},{i:30,k:'Bojong Koneng',n:'Muhammad Kevin Aldiano'},{i:31,k:'Bojong Koneng',n:'Candra'},{i:32,k:'Bojong Koneng',n:'Andrew Setiawan'},{i:33,k:'Bojong Koneng',n:'Zaskia Zaneta Aulia Silva'},{i:34,k:'Bojong Koneng',n:'Cerry Rachquelita'},{i:35,k:'Bojong Koneng',n:'Aura Auliana Silva'},{i:36,k:'Bojong Koneng',n:'Aprinia Della'},{i:37,k:'Kamurang',n:'Apeng'},{i:38,k:'Kamurang',n:'Ahmad Kamilludin Hidayah'},{i:39,k:'Kamurang',n:'Romadhona Fajri Asadulloh'},{i:40,k:'Kamurang',n:'M. Farkhan Ulul Azmi'},{i:41,k:'Kamurang',n:'Miftahul Rizky Ilham'},{i:42,k:'Kamurang',n:'Diego Satria Mandala'},{i:43,k:'Kamurang',n:'Muhammad Akmal Jannatan'},{i:44,k:'Kamurang',n:'Muhammad Fauza Albukhori'},{i:45,k:'Kamurang',n:'Ahmad saifulloh'},{i:46,k:'Kamurang',n:'Gabril Idhfi Almaidah'},{i:47,k:'Kamurang',n:'Zidan'},{i:48,k:'Kamurang',n:'Ipung'},{i:49,k:'Kamurang',n:'Muhammad Lutfi Alamsyah'},{i:50,k:'Kamurang',n:'Ferdinan Muhamad Rofik'},{i:51,k:'Kamurang',n:'Muhammad Catur Pamungkas'},{i:52,k:'Kamurang',n:'Muhammad Sahlan Kayyisa'},{i:53,k:'Kamurang',n:'Humaira Jamila'},{i:54,k:'Kamurang',n:'Novita Nurbaiti'},{i:55,k:'Kamurang',n:'Melia Cahya Utami'},{i:56,k:'Kamurang',n:'Sabita Zifani Malika'},{i:57,k:'Kamurang',n:'Naura Jihada Masiyana'},{i:58,k:'Kamurang',n:'Listya Yesti Kamilatunnisa'},{i:59,k:'Kamurang',n:'Auliawati Nur Fadillah'},{i:60,k:'Kamurang',n:'Yusriani Palupiningtyas (Iyuk)'},{i:61,k:'Kamurang',n:'Mery Khirotul Aini'},{i:62,k:'Kamurang',n:'Addina Uswatun Hasanah'},{i:63,k:'Kamurang',n:'Kania Fadhilah Agustina'},{i:64,k:'Kamurang',n:'Zahra Roudhotul Jannah'},{i:65,k:'Kamurang',n:'Agnesia Bunga Cleopatra'},{i:66,k:'Kamurang',n:'Bunga Fitria Nazala Firdaus'},{i:67,k:'Kamurang',n:'Azlia Zahra Sholehah'},{i:68,k:'Kamurang',n:'Iqlima Tazkiyatun Nufus'},{i:69,k:'Kamurang',n:'Amelia Anggita Pertiwi'},{i:70,k:'Kamurang',n:'Atina Salma Fiddini'},{i:71,k:'Kamurang',n:'Ulfa Fawzia'},{i:72,k:'Kamurang',n:'Nurnadilah'},{i:73,k:'Kamurang',n:'Ina Elfita Rahmawati'},{i:74,k:'Sanja',n:'Didan Ardiansyah'},{i:75,k:'Sanja',n:'Naufal Faiz Yonayulita'},{i:76,k:'Sanja',n:'Naoval Sadewo'},{i:77,k:'Sanja',n:'Muhammad Syabani'},{i:78,k:'Sanja',n:'Hilman Rosyad'},{i:79,k:'Sanja',n:'Agung Hidayat Firmansyah'},{i:80,k:'Sanja',n:'Royan Adiansyah'},{i:81,k:'Sanja',n:'Muhammad Burhan Triwibowo'},{i:82,k:'Sanja',n:'Muhammad Zakiy Abdillah'},{i:83,k:'Sanja',n:'Faza Asyahri Ramdan'},{i:84,k:'Sanja',n:'Amelia Febriana'},{i:85,k:'Sanja',n:'Renita Kurniawati'},{i:86,k:'Sanja',n:'Shelvia Ariani Indrianita'},{i:87,k:'Sanja',n:'Rajwa Nafisah'},{i:88,k:'Sentul',n:'Febrian Rasyadan Sidiq'},{i:90,k:'Sentul',n:'Hasan Jaelani'},{i:91,k:'Sentul',n:'Ferdiansyah Rizki Rohmatulloh'},{i:92,k:'Sentul',n:'Vernando Dwi Oktaviano'},{i:93,k:'Sentul',n:'Aji Purnomo'},{i:94,k:'Sentul',n:'Hanif Qomarudin Mulyaputra'},{i:95,k:'Sentul',n:'Andika Adityia'},{i:96,k:'Sentul',n:'Muhammad Rafli Yanwar'},{i:97,k:'Sentul',n:'Andreana Dafi Musafalutfi'},{i:98,k:'Sentul',n:'Dillon Hisyam Wijaya'},{i:99,k:'Sentul',n:'Siti Wulan'},{i:100,k:'Sentul',n:'Annisa Sintania'},{i:101,k:'Sentul',n:'Josallyn Azka Kadiarrahman'},{i:102,k:'Sentul',n:'Early Raihanah Shahada'},{i:103,k:'Sentul',n:'Yanti Mardhiyanti'},{i:104,k:'Sentul',n:'Yuyun Nurul Afifah'},{i:105,k:'Sentul',n:'Luluk Wardani'},{i:106,k:'Sentul',n:'Syifa Nurul Fatah'},{i:107,k:'Sentul',n:'Dr. Andi Elsa Fadhilah Sakti, S.S., M.Hum.'},{i:108,k:'Sentul',n:'Vivi Lavelia'},{i:109,k:'Sentul',n:'Elsa Fauzia Meilani'},{i:110,k:'Sentul',n:'Andini Septiani'},{i:111,k:'Tarikolot',n:'Kenny Perdana Sakti'},{i:112,k:'Tarikolot',n:'Yusron Yoko Alfian'},{i:113,k:'Tarikolot',n:'Alaufa Rafahim'},{i:114,k:'Tarikolot',n:'Alvin Agilian M'},{i:115,k:'Tarikolot',n:'Rizky Muhammad Saputa'},{i:116,k:'Tarikolot',n:'Yusrina Yoko Meilawati'},{i:117,k:'Tarikolot',n:'Putri Aprilia'},{i:118,k:'Tarikolot',n:'Fania Awalia Nurmaila'},{i:119,k:'Tarikolot',n:'Airin Putri Yani'},{i:120,k:'Sanja',n:'Hari Septian Maulana'},{i:121,k:'Sanja',n:'Fiona Azzahra'}];
+
+const PENGURUS = [
+  {id:74, jabatan:'Ketua'},
+  {id:50, jabatan:'Wakil 1'},
+  {id:96, jabatan:'Wakil 2'},
+  {id:10, jabatan:'Sekertaris'},
+  {id:62, jabatan:'Bendahara'},
+  {id:9,  jabatan:'Penerobos 1'},
+  {id:43, jabatan:'Penerobos 2'},
+  {id:39, jabatan:'Penerobos 3'},
+  {id:111,jabatan:'Kemandirian'},
+  {id:77, jabatan:'Kemandirian'},
+  {id:28, jabatan:'Kemandirian'},
+  {id:44, jabatan:'Kemandirian'},
+  {id:5,  jabatan:'Kemandirian'},
+  {id:88, jabatan:'Kemandirian'},
+  {id:72, jabatan:'Keputrian'},
+  {id:73, jabatan:'Keputrian'},
+  {id:16, jabatan:'Keputrian'},
+  {id:7,  jabatan:'Keilmuan'},
+];
+const PENGURUS_MAP = {};
+PENGURUS.forEach(p=>{ PENGURUS_MAP[p.id] = p.jabatan; });
+const JABATAN_ORDER = ['Ketua','Wakil 1','Wakil 2','Sekertaris','Bendahara','Penerobos 1','Penerobos 2','Penerobos 3','Kemandirian','Keputrian','Keilmuan'];
+const STORE_KEY = 'mumi_absensi_v1';
+const ROSTER_KEY = 'mumi_roster_v1';
+const KELOMPOK_ORDER = ['Al Muhajirin','Bojong Koneng','Kamurang','Sanja','Sentul','Tarikolot'];
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function nowTime(){
+  const d = new Date();
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { sessions:{}, newMembers:{} };
+}
+function saveDB(){ 
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB)); 
+}
+
+function saveRoster(){
+  localStorage.setItem(ROSTER_KEY, JSON.stringify(ROSTER));
+}
+
+function loadRosterFromStorage(){
+  try{
+    const raw = localStorage.getItem(ROSTER_KEY);
+    if(raw){
+      const loaded = JSON.parse(raw);
+      if(Array.isArray(loaded) && loaded.length > 0) return loaded;
+    }
+  }catch(e){}
+  return null;
+}
+
+let DB = loadDB();
+// Load ROSTER dari localStorage jika ada
+const savedRoster = loadRosterFromStorage();
+if(savedRoster) ROSTER = savedRoster;
+
+if (DB.newMembers) {
+  Object.values(DB.newMembers).forEach(m => {
+    if (m && m.i && !ROSTER.some(r => r.i === m.i)) {
+      ROSTER.push(m);
+    }
+  });
+}
+
+function ensureSession(dateKey){
+  if(!DB.sessions[dateKey]){
+    DB.sessions[dateKey] = { nama:'', closed:false, records:{} };
+  }
+  return DB.sessions[dateKey];
+}
+
+function fmtDateLabel(dateKey){
+  const d = new Date(dateKey+'T00:00:00');
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][d.getDay()];
+  const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][d.getMonth()];
+  return hari+', '+d.getDate()+' '+bulan+' '+d.getFullYear();
+}
+
+/* ---------- NAV ---------- */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['cetak','scan','rekap','daftar','edit','pengurus','kelompok','struktur','admin','rekap-kelompok','dashboard'].forEach(t=>{
+      const el = document.getElementById('tab-'+t);
+      if(el) el.style.display = (t===btn.dataset.tab)?'block':'none';
+    });
+    if(btn.dataset.tab==='scan') renderScanTab();
+    if(btn.dataset.tab==='rekap') renderRekapTab();
+    if(btn.dataset.tab==='pengurus') renderPengurusTab();
+    if(btn.dataset.tab==='daftar') initDaftarTab();
+    if(btn.dataset.tab==='edit') initEditTab();
+    if(btn.dataset.tab==='kelompok') initKelompokTab();
+    if(btn.dataset.tab==='struktur') renderStrukturTab();
+    if(btn.dataset.tab==='admin') initAdminTab();
+    if(btn.dataset.tab==='rekap-kelompok') initRekapKelompokTab();
+    if(btn.dataset.tab==='dashboard') initDashboardTab();
+  });
+});
+
+function renderPengurusTab(){
+  const box = document.getElementById('pengurusList');
+  box.innerHTML = JABATAN_ORDER.map(jab=>{
+    const rows = PENGURUS.filter(p=>p.jabatan===jab).map(p=>{
+      const person = ROSTER.find(r=>r.i===p.id);
+      if(!person) return '';
+      return `<div class="pengurus-row">
+        <div class="jab">${jab}</div>
+        <div style="flex:1"><div class="nm">${person.n}</div><div class="kl">${person.k}</div></div>
+      </div>`;
+    }).join('');
+    return rows;
+  }).join('');
+}
+
+/* ---------- TAB DAFTAR ANGGOTA BARU ---------- */
+function getMaxId(){
+  return Math.max(0, ...ROSTER.map(r=>r.i), ...Object.values(DB.newMembers||{}).map(m=>m.i||0));
+}
+
+function initDaftarTab(){
+  const maxId = getMaxId();
+  document.getElementById('fldNewId').value = 'MUMI-' + (maxId + 1);
+  
+  document.getElementById('btnAddAnggota').addEventListener('click', addAnggotaBaru, {once:true});
+  document.getElementById('btnClearForm').addEventListener('click', ()=>{
+    document.getElementById('fldNewNama').value = '';
+    document.getElementById('fldNewKelompok').value = '';
+    document.getElementById('fldNewJK').value = 'Laki-laki';
+    document.getElementById('previewNewQr').innerHTML = '';
+    document.getElementById('msgSuccess').classList.remove('show');
+  });
+}
+
+function addAnggotaBaru(){
+  const nama = document.getElementById('fldNewNama').value.trim();
+  const kelompok = document.getElementById('fldNewKelompok').value;
+  
+  if(!nama || !kelompok){
+    alert('Nama dan kelompok harus diisi!');
+    return;
+  }
+  
+  const maxId = getMaxId();
+  const newId = maxId + 1;
+  
+  const newMember = {
+    i: newId,
+    k: kelompok,
+    n: nama,
+    jk: document.getElementById('fldNewJK').value,
+    new: true
+  };
+  
+  // Simpan ke DB
+  if(!DB.newMembers) DB.newMembers = {};
+  DB.newMembers[newId] = newMember;
+  saveDB();
+  
+ // Tambah ke ROSTER
+ROSTER.push(newMember);
+saveRoster(); // PENTING: Simpan ROSTER ke localStorage agar persistent
+
+// Refresh seluruh tampilan
+renderCetak();
+
+if (typeof renderEditSearch === "function") {
+    renderEditSearch();
+}
+
+showPreviewQr(newMember);
+  
+  // Show success msg
+  const msg = document.getElementById('msgSuccess');
+  msg.innerHTML = `✓ <b>${nama}</b> (${kelompok}) berhasil terdaftar dengan ID MUMI-${newId}. Bisa langsung di-scan untuk absensi pengajian ini.`;
+  msg.classList.add('show');
+  
+  // Reset form
+  setTimeout(()=>{
+    document.getElementById('fldNewNama').value = '';
+    document.getElementById('fldNewKelompok').value = '';
+    document.getElementById('fldNewId').value = 'MUMI-' + (newId + 1);
+  }, 600);
+  
+initDaftarTab();
+
+  // Re-bind tombol
+  document.getElementById('btnAddAnggota').addEventListener('click', addAnggotaBaru, {once:true});
+}
+
+function showPreviewQr(member){
+  const preview = document.getElementById('previewNewQr');
+  const qrid = 'qr-new-' + member.i;
+  preview.innerHTML = `
+    <div class="card">
+      <h2>Preview barcode anggota baru</h2>
+      <div class="preview-qr">
+        <div class="qrbox" id="${qrid}"></div>
+        <div class="nm">${member.n}</div>
+        <div class="kl">${member.k}</div>
+        <div class="id">ID: MUMI-${member.i}</div>
+        <button class="btn" style="margin-top:10px; width:100%;" onclick="downloadNewCard(${member.i})">Unduh barcode untuk dibagikan</button>
+      </div>
+    </div>`;
+  
+  // Render QR setelah DOM siap
+  setTimeout(()=>{
+    const el = document.getElementById(qrid);
+    if(el) new QRCode(el, { text:'MUMI-'+member.i, width:110, height:110, correctLevel: QRCode.CorrectLevel.M });
+  }, 100);
+}
+
+function downloadNewCard(memberId){
+  const member = DB.newMembers && DB.newMembers[memberId];
+  if(!member) return;
+  
+  const size = 360;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = 430;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  
+  // Draw QR dari element yang sudah ada
+  const qrEl = document.querySelector('#qr-new-' + memberId + ' canvas');
+  if(qrEl) ctx.drawImage(qrEl, (size-260)/2, 24, 260, 260);
+  
+  ctx.fillStyle = '#1f2a22';
+  ctx.font = '700 20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(member.n, size/2, 320, size-30);
+  ctx.font = '400 14px sans-serif';
+  ctx.fillStyle = '#5c6a5f';
+  ctx.fillText(member.k, size/2, 346);
+  ctx.font = '400 12px sans-serif';
+  ctx.fillStyle = '#8a8a86';
+  ctx.fillText('ID: MUMI-'+member.i+' - Baru, Absensi Pengajian MUMI Citeureup', size/2, 370);
+  
+  canvas.toBlob(blob=>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'Barcode-BARU-'+sanitizeFilename(member.n)+'.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+/* ---------- TAB EDIT DATA ANGGOTA ---------- */
+let currentEditMemberId = null;
+
+function initEditTab(){
+  document.getElementById('editSearch').addEventListener('input', renderEditSearch);
+}
+
+function renderEditSearch(){
+  const q = (document.getElementById('editSearch').value || '').toLowerCase().trim();
+  const result = document.getElementById('editSearchResult');
+  
+  if(!q){
+    result.innerHTML = '';
+    document.getElementById('editForm').classList.remove('show');
+    return;
+  }
+  
+  const allMembers = [...ROSTER].sort((a,b)=>a.i-b.i);
+  const matches = allMembers.filter(m=> m.n.toLowerCase().includes(q)).slice(0, 30);
+  
+  result.innerHTML = matches.map(m=>`
+    <div class="edit-item" onclick="selectEditMember(${m.i})">
+      <div class="nm">${m.n}</div>
+      <div class="info">ID: MUMI-${m.i} • ${m.k} • ${m.jk||'?'}</div>
+    </div>
+  `).join('') || '<div style="padding:10px; color:#8a8a86; text-align:center;">Tidak ada hasil.</div>';
+}
+
+function selectEditMember(memberId){
+  const member = ROSTER.find(m=> m.i === memberId);
+  if(!member) return;
+  
+  currentEditMemberId = memberId;
+  document.getElementById('editId').value = 'MUMI-' + memberId;
+  document.getElementById('editNama').value = member.n || '';
+  document.getElementById('editKelompok').value = member.k || '';
+  document.getElementById('editJK').value = member.jk || 'Laki-laki';
+  document.getElementById('editTTL').value = member.ttl || '';
+  
+  document.getElementById('editForm').classList.add('show');
+  document.getElementById('msgEditSuccess').classList.remove('show');
+  document.getElementById('msgDeleteConfirm').classList.remove('show');
+  
+  // Re-bind tombol (pastikan tidak duplicate listener)
+  const btnSave = document.getElementById('btnSaveEdit');
+  const btnCancel = document.getElementById('btnCancelEdit');
+  const btnDelete = document.getElementById('btnDeleteAnggota');
+  
+  btnSave.onclick = ()=> saveEditData();
+  btnCancel.onclick = ()=> cancelEdit();
+  btnDelete.onclick = ()=> showDeleteConfirm();
+}
+
+function saveEditData(){
+  const id = currentEditMemberId;
+  const member = ROSTER.find(m=> m.i === id);
+  if(!member) return;
+  
+  const newNama = document.getElementById('editNama').value.trim();
+  const newKelompok = document.getElementById('editKelompok').value;
+  const newJK = document.getElementById('editJK').value;
+  const newTTL = document.getElementById('editTTL').value;
+  
+  if(!newNama || !newKelompok){
+    alert('Nama dan kelompok harus diisi!');
+    return;
+  }
+  
+  // Update ROSTER
+  member.n = newNama;
+  member.k = newKelompok;
+  member.jk = newJK;
+  member.ttl = newTTL;
+  
+  // Update di newMembers kalau itu anggota baru
+  if(DB.newMembers && DB.newMembers[id]){
+    DB.newMembers[id] = {...DB.newMembers[id], n: newNama, k: newKelompok, jk: newJK, ttl: newTTL};
+  }
+  
+  saveDB();
+  
+  const msg = document.getElementById('msgEditSuccess');
+  msg.innerHTML = `✓ Data <b>${newNama}</b> (${newKelompok}) berhasil diperbarui.`;
+  msg.classList.add('show');
+  
+  setTimeout(()=>{
+    document.getElementById('editSearch').value = '';
+    document.getElementById('editForm').classList.remove('show');
+    renderEditSearch();
+  }, 1200);
+}
+
+function cancelEdit(){
+  document.getElementById('editSearch').value = '';
+  document.getElementById('editForm').classList.remove('show');
+  document.getElementById('msgDeleteConfirm').classList.remove('show');
+  renderEditSearch();
+}
+
+function showDeleteConfirm(){
+  document.getElementById('msgDeleteConfirm').classList.add('show');
+  document.getElementById('btnConfirmDelete').onclick = ()=> confirmDelete();
+  document.getElementById('btnCancelDelete').onclick = ()=> cancelEdit();
+}
+
+function confirmDelete(){
+  const id = currentEditMemberId;
+  const member = ROSTER.find(m=> m.i === id);
+  if(!member) return;
+  
+  // Hapus dari ROSTER
+  const idx = ROSTER.indexOf(member);
+  if(idx >= 0) ROSTER.splice(idx, 1);
+  
+  // Hapus dari newMembers kalau itu anggota baru
+  if(DB.newMembers && DB.newMembers[id]){
+    delete DB.newMembers[id];
+  }
+  
+  saveDB();
+  
+  const msg = document.getElementById('msgEditSuccess');
+  msg.innerHTML = `✓ <b>${member.n}</b> telah dihapus dari roster aktif. Riwayat kehadiran lama tetap tersimpan.`;
+  msg.classList.add('show');
+  
+  setTimeout(()=>{
+    document.getElementById('editSearch').value = '';
+    document.getElementById('editForm').classList.remove('show');
+    renderEditSearch();
+  }, 1200);
+}
+
+/* ---------- TAB CETAK ---------- */
+function initCetak(){
+  const sel = document.getElementById('filterKelompok');
+  sel.innerHTML = '<option value="">Semua kelompok</option>' +
+    KELOMPOK_ORDER.map(k=>`<option value="${k}">${k}</option>`).join('');
+  sel.addEventListener('change', renderCetak);
+  document.getElementById('btnPrintCetak').addEventListener('click', ()=>window.print());
+  document.getElementById('btnZipAll').addEventListener('click', downloadZip);
+  renderCetak();
+}
+
+function sanitizeFilename(s){
+  return s.replace(/[^a-zA-Z0-9\- ]/g,'').trim().replace(/\s+/g,'-');
+}
+
+function buildCardCanvas(p){
+  const src = document.querySelector('#qr-'+p.i+' canvas');
+  const size = 360;
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = 430;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(src) ctx.drawImage(src, (size-260)/2, 24, 260, 260);
+  ctx.fillStyle = '#1f2a22';
+  ctx.font = '700 20px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(p.n, size/2, 320, size-30);
+  ctx.font = '400 14px sans-serif';
+  ctx.fillStyle = '#5c6a5f';
+  const jab = PENGURUS_MAP[p.i];
+  ctx.fillText(p.k + (jab? ' - '+jab : ''), size/2, 346);
+  ctx.font = '400 12px sans-serif';
+  ctx.fillStyle = '#8a8a86';
+  ctx.fillText('ID: MUMI-'+p.i+' - Absensi Pengajian MUMI Citeureup', size/2, 370);
+  return canvas;
+}
+
+function downloadCard(personId){
+  const p = ROSTER.find(x=>x.i===personId);
+  if(!p) return;
+  const canvas = buildCardCanvas(p);
+  canvas.toBlob(blob=>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'Barcode-'+sanitizeFilename(p.n)+'.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function downloadZip(){
+  const filterK = document.getElementById('filterKelompok').value;
+  const people = ROSTER.filter(p=> !filterK || p.k===filterK);
+  const hint = document.getElementById('zipHint');
+  hint.style.display = 'block';
+  const zip = new JSZip();
+  let done = 0;
+  function next(){
+    if(done>=people.length){
+      zip.generateAsync({type:'blob'}).then(blob=>{
+        saveAs(blob, 'Barcode-MUMI'+(filterK? '-'+sanitizeFilename(filterK):'')+'.zip');
+        hint.style.display = 'none';
+      });
+      return;
+    }
+    const p = people[done];
+    const canvas = buildCardCanvas(p);
+    canvas.toBlob(blob=>{
+      zip.file(sanitizeFilename(p.k)+'/Barcode-'+sanitizeFilename(p.n)+'.png', blob);
+      done++;
+      next();
+    });
+  }
+  next();
+}
+function renderCetak(){
+  const filterK = document.getElementById('filterKelompok').value;
+  const area = document.getElementById('cetakArea');
+  area.innerHTML = '';
+  const groups = {};
+  ROSTER.filter(p=> !filterK || p.k===filterK).forEach(p=>{
+    (groups[p.k] = groups[p.k]||[]).push(p);
+  });
+  KELOMPOK_ORDER.filter(k=>groups[k]).forEach(k=>{
+    const title = document.createElement('div');
+    title.className='kelompok-title';
+    title.textContent = k + ' (' + groups[k].length + ' orang)';
+    area.appendChild(title);
+    const grid = document.createElement('div');
+    grid.className='qrgrid';
+    groups[k].forEach(p=>{
+      const card = document.createElement('div');
+      card.className='qrcard';
+      const jab = PENGURUS_MAP[p.i];
+      card.innerHTML = `<div class="qrbox" id="qr-${p.i}"></div>
+        <div class="nm">${p.n}</div>
+        <div class="kl">${p.k}</div>
+        <div class="no">ID: MUMI-${p.i}</div>
+        ${jab? `<div class="jabatan-badge">${jab}</div>` : ''}
+        <button class="dl noprint" onclick="downloadCard(${p.i})">Unduh untuk WA</button>`;
+      grid.appendChild(card);
+    });
+    area.appendChild(grid);
+  });
+  // render QR after DOM insert
+  ROSTER.filter(p=> !filterK || p.k===filterK).forEach(p=>{
+    const el = document.getElementById('qr-'+p.i);
+    if(el) new QRCode(el, { text:'MUMI-'+p.i, width:110, height:110, correctLevel: QRCode.CorrectLevel.M });
+  });
+}
+
+/* ---------- TAB SCAN ---------- */
+let html5Scanner = null;
+let currentSessionKey = null;
+
+function initScan(){
+  document.getElementById('sesiTanggal').value = todayStr();
+  document.getElementById('sesiTanggal').addEventListener('change', renderScanTab);
+  document.getElementById('sesiNama').addEventListener('input', (e)=>{
+    const s = ensureSession(currentSessionKey);
+    s.nama = e.target.value;
+    saveDB();
+  });
+  document.getElementById('btnStartScan').addEventListener('click', startScanner);
+  document.getElementById('btnStopScan').addEventListener('click', stopScanner);
+  document.getElementById('searchManual').addEventListener('input', renderManualList);
+}
+
+function renderScanTab(){
+  currentSessionKey = document.getElementById('sesiTanggal').value || todayStr();
+  const s = ensureSession(currentSessionKey);
+  document.getElementById('sesiNama').value = s.nama || '';
+  renderScanStats();
+  renderManualList();
+}
+
+function renderScanStats(){
+  const s = ensureSession(currentSessionKey);
+  const counts = {Hadir:0, Izin:0, Sakit:0};
+  Object.values(s.records).forEach(r=>{ if(counts[r.status]!==undefined) counts[r.status]++; });
+  const belum = ROSTER.length - Object.keys(s.records).length;
+  document.getElementById('scanStats').innerHTML = `
+    <div class="stat hadir"><div class="num">${counts.Hadir}</div><div class="lbl">Hadir</div></div>
+    <div class="stat izin"><div class="num">${counts.Izin}</div><div class="lbl">Izin</div></div>
+    <div class="stat sakit"><div class="num">${counts.Sakit}</div><div class="lbl">Sakit</div></div>
+    <div class="stat"><div class="num">${belum}</div><div class="lbl">Belum absen</div></div>`;
+}
+
+function feedback(ok, html){
+  const el = document.getElementById('scanFeedback');
+  el.className = ok? 'ok':'err';
+  el.innerHTML = html;
+  showToast(ok, html);
+}
+
+let toastTimer = null;
+function showToast(ok, html){
+  const t = document.getElementById('scanToast');
+  t.className = (ok? 'ok':'err') + ' noprint';
+  t.innerHTML = html;
+  requestAnimationFrame(()=> t.classList.add('show'));
+  if(ok && navigator.vibrate) navigator.vibrate(120);
+  if(!ok && navigator.vibrate) navigator.vibrate([80,60,80]);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+function markAttendance(personId, status){
+  const s = ensureSession(currentSessionKey);
+  if(s.closed){ feedback(false, 'Sesi ini sudah ditutup, tidak bisa diubah.'); return false; }
+  const p = ROSTER.find(x=>x.i===personId);
+  if(!p) return false;
+  s.records[personId] = { status: status, time: nowTime() };
+  saveDB();
+  renderScanStats();
+  renderManualList();
+  syncToGoogleSheets(p.n, p.k, status, nowTime()); // Auto-sync ke Google Sheets
+  return p;
+}
+
+function startScanner(){
+  document.getElementById('btnStartScan').style.display='none';
+  document.getElementById('btnStopScan').style.display='block';
+  html5Scanner = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: 220 };
+  html5Scanner.start({ facingMode:"environment" }, config, onScanSuccess, ()=>{})
+    .catch(err=>{
+      feedback(false, 'Kamera tidak bisa diakses. Pastikan izin kamera diberikan, atau gunakan absen manual di bawah.');
+      document.getElementById('btnStartScan').style.display='block';
+      document.getElementById('btnStopScan').style.display='none';
+    });
+}
+function stopScanner(){
+  if(html5Scanner){
+    html5Scanner.stop().then(()=>html5Scanner.clear()).catch(()=>{});
+  }
+  document.getElementById('btnStartScan').style.display='block';
+  document.getElementById('btnStopScan').style.display='none';
+}
+
+let lastScanTs = 0;
+function onScanSuccess(decodedText){
+
+  const now = Date.now();
+
+  if(now - lastScanTs < 1800) return;
+
+  lastScanTs = now;
+
+  const m = decodedText.match(/^MUMI-(\d+)$/);
+
+  if(!m){
+      feedback(false,"❌ Barcode tidak dikenali");
+      return;
+  }
+
+  const id = parseInt(m[1],10);
+
+  const s = ensureSession(currentSessionKey);
+
+  // ==========================
+  // ANTI SCAN GANDA
+  // ==========================
+
+  if(s.records[id]){
+
+      feedback(
+        false,
+        "⚠️ Sudah absen sebelumnya<br><b>"+ROSTER.find(x=>x.i===id).n+
+        "</b><br>Jam : "+s.records[id].time
+      );
+
+      return;
+
+  }
+
+  // ==========================
+
+  const p = markAttendance(id,"Hadir");
+
+  if(!p){
+
+      feedback(false,"❌ ID tidak ditemukan");
+
+      return;
+
+  }
+
+  feedback(
+      true,
+      "<div class='nm'>"+p.n+
+      "</div>"+p.k+
+      "<br>✅ Hadir<br>Jam : "+
+      nowTime()
+  );
+
+  renderScanTab();
+  renderRekapTab();
+
+}
+
+function renderManualList(){
+  const s = ensureSession(currentSessionKey);
+  const q = (document.getElementById('searchManual').value||'').toLowerCase().trim();
+  const list = document.getElementById('manualList');
+  let people = ROSTER;
+  if(q) people = people.filter(p=>p.n.toLowerCase().includes(q));
+  people = people.slice(0, 40);
+  list.innerHTML = people.map(p=>{
+    const r = s.records[p.i];
+    const badge = r? `<span class="badge ${r.status.toLowerCase()}">${r.status} ${r.time}</span>` : `<span class="badge belum">Belum</span>`;
+    return `<div class="prow">
+      <div><div class="nm">${p.n}</div><div class="kl">${p.k}</div></div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${badge}
+        <div class="minibtns">
+          <button class="h" onclick="manualMark(${p.i},'Hadir')">H</button>
+          <button class="i" onclick="manualMark(${p.i},'Izin')">I</button>
+          <button class="s" onclick="manualMark(${p.i},'Sakit')">S</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="prow">Tidak ada nama cocok.</div>';
+}
+function manualMark(id, status){
+  const p = markAttendance(id, status);
+  if(p) feedback(true, `<div class="nm">${p.n}</div>${p.k} &middot; ${status} (manual) jam ${nowTime()}`);
+}
+
+/* ---------- TAB REKAP ---------- */
+function initRekap(){
+  document.getElementById('rekapSesiSelect').addEventListener('change', renderRekapTab);
+  document.getElementById('filterStatus').addEventListener('change', renderRekapDetail);
+  document.getElementById('btnTutupSesi').addEventListener('click', ()=>{
+    const key = document.getElementById('rekapSesiSelect').value;
+    const s = ensureSession(key);
+    if(!confirm('Tutup sesi ini? Semua yang belum absen akan otomatis tercatat Alpa / tanpa keterangan.')) return;
+    ROSTER.forEach(p=>{ if(!s.records[p.i]) s.records[p.i] = {status:'Alpa', time:''}; });
+    s.closed = true;
+    saveDB();
+    renderRekapTab();
+  });
+  document.getElementById('btnCetakRekap').addEventListener('click', ()=>window.print());
+  document.getElementById('btnCsv').addEventListener('click', exportCsv);
+  document.getElementById('btnResetSesi').addEventListener('click', ()=>{
+    const key = document.getElementById('rekapSesiSelect').value;
+    if(!confirm('⚠️ RESET sesi tanggal '+key+'? Semua data absensi hari ini akan DIHAPUS (untuk kasus libur atau uji coba). Yakin?')) return;
+    if(DB.sessions[key]){
+      delete DB.sessions[key];
+      saveDB();
+    }
+    alert('✅ Sesi berhasil di-reset. Silakan mulai sesi baru dari tab Scan Absensi.');
+    populateSesiSelect();
+    renderRekapTab();
+  });
+}
+
+function populateSesiSelect(){
+  const sel = document.getElementById('rekapSesiSelect');
+  const keys = Object.keys(DB.sessions).sort().reverse();
+  if(keys.length===0) keys.push(todayStr());
+  sel.innerHTML = keys.map(k=>{
+    const s = DB.sessions[k];
+    const label = fmtDateLabel(k) + (s && s.nama? ' - '+s.nama : '') + (s && s.closed? ' (ditutup)':'');
+    return `<option value="${k}">${label}</option>`;
+  }).join('');
+}
+
+function renderRekapTab(){
+  populateSesiSelect();
+  const key = document.getElementById('rekapSesiSelect').value || todayStr();
+  const s = ensureSession(key);
+  document.getElementById('rekapJudul').textContent = 'Rekap - ' + fmtDateLabel(key);
+  document.getElementById('rekapSub').textContent = (s.nama? s.nama+' &middot; ':'') + ROSTER.length + ' jamaah terdaftar' + (s.closed? ' &middot; sesi ditutup':'');
+
+  const counts = {Hadir:0, Izin:0, Sakit:0, Alpa:0};
+  ROSTER.forEach(p=>{
+    const r = s.records[p.i];
+    if(r && counts[r.status]!==undefined) counts[r.status]++;
+  });
+  const belum = ROSTER.length - Object.keys(s.records).length;
+  const pct = ROSTER.length? Math.round((counts.Hadir/ROSTER.length)*1000)/10 : 0;
+  document.getElementById('rekapPct').textContent = pct + '%';
+  document.getElementById('rekapStats').innerHTML = `
+    <div class="stat hadir"><div class="num">${counts.Hadir}</div><div class="lbl">Hadir</div></div>
+    <div class="stat izin"><div class="num">${counts.Izin}</div><div class="lbl">Izin</div></div>
+    <div class="stat sakit"><div class="num">${counts.Sakit}</div><div class="lbl">Sakit</div></div>
+    <div class="stat alpa"><div class="num">${counts.Alpa}</div><div class="lbl">Alpa</div></div>
+    <div class="stat"><div class="num">${belum}</div><div class="lbl">Belum absen</div></div>`;
+
+  // per kelompok table
+  const rowsK = KELOMPOK_ORDER.map(k=>{
+    const members = ROSTER.filter(p=>p.k===k);
+    const c = {Hadir:0, Izin:0, Sakit:0, Alpa:0};
+    members.forEach(p=>{ const r=s.records[p.i]; if(r && c[r.status]!==undefined) c[r.status]++; });
+    const b = members.length - members.filter(p=>s.records[p.i]).length;
+    const p2 = members.length? Math.round((c.Hadir/members.length)*1000)/10 : 0;
+    return `<tr><td>${k}</td><td>${members.length}</td><td>${c.Hadir}</td><td>${c.Izin}</td><td>${c.Sakit}</td><td>${c.Alpa}</td><td>${b}</td><td>${p2}%</td></tr>`;
+  }).join('');
+  document.getElementById('tabelKelompok').innerHTML = `
+    <tr><th>Kelompok</th><th>Total</th><th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpa</th><th>Belum</th><th>% Hadir</th></tr>
+    ${rowsK}`;
+
+  renderRekapDetail();
+}
+
+function renderRekapDetail(){
+  const key = document.getElementById('rekapSesiSelect').value || todayStr();
+  const s = ensureSession(key);
+  const filterStatus = document.getElementById('filterStatus').value;
+  const rows = ROSTER.map(p=>{
+    const r = s.records[p.i];
+    const status = r? r.status : 'Belum';
+    const time = r? (r.time||'-') : '-';
+    return {p, status, time};
+  }).filter(x=> !filterStatus || x.status===filterStatus);
+
+  document.getElementById('tabelDetail').innerHTML = `
+    <tr><th>No</th><th>Nama</th><th>Kelompok</th><th>Status</th><th>Jam</th><th style="width:60px;">Edit</th></tr>
+    ${rows.map(x=>`<tr>
+      <td>${x.p.i}</td><td>${x.p.n}</td><td>${x.p.k}</td>
+      <td><span class="badge ${x.status.toLowerCase()}">${x.status}</span></td>
+      <td>${x.time}</td>
+      <td><button style="font-size:10px; padding:3px 8px; border:1px solid var(--line); background:#fff; border-radius:5px; cursor:pointer;" onclick="editJamDialog(${x.p.i})">✏️</button></td>
+    </tr>`).join('')}`;
+}
+
+function editJamDialog(personId){
+  const currentTime = prompt('Masukkan jam hadir (format HH:MM, cth: 19:30):');
+  if(!currentTime) return;
+  if(!/^\d{2}:\d{2}$/.test(currentTime)){
+    alert('Format salah! Gunakan HH:MM');
+    return;
+  }
+  const key = document.getElementById('rekapSesiSelect').value || todayStr();
+  const s = ensureSession(key);
+  if(s.records[personId]){
+    s.records[personId].time = currentTime;
+    saveDB();
+    alert('✅ Jam berhasil diubah jadi ' + currentTime);
+    renderRekapDetail();
+  }
+}
+
+function exportCsv(){
+  const key = document.getElementById('rekapSesiSelect').value || todayStr();
+  const s = ensureSession(key);
+  let csv = 'No,Nama,Kelompok,Status,Jam\n';
+  ROSTER.forEach(p=>{
+    const r = s.records[p.i];
+    const status = r? r.status : 'Belum';
+    const time = r? (r.time||'') : '';
+    csv += `${p.i},"${p.n}",${p.k},${status},${time}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'rekap-absensi-'+key+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- LOGIN GATE ---------- */
+const GATE_KEY = 'mumi_pengurus_auth';
+const PENGURUS_PASSWORD = 'MUMI2026'; // ganti kata sandi ini sesuai kesepakatan pengurus
+
+function checkGate(){
+  if(sessionStorage.getItem(GATE_KEY)==='1'){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('btnLogout').style.display = 'block';
+  }
+}
+document.getElementById('btnGateEnter').addEventListener('click', tryEnter);
+document.getElementById('gatePass').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryEnter(); });
+function tryEnter(){
+  const val = document.getElementById('gatePass').value;
+  if(val === PENGURUS_PASSWORD){
+    sessionStorage.setItem(GATE_KEY,'1');
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('btnLogout').style.display = 'block';
+    document.getElementById('gateErr').textContent = '';
+  } else {
+    document.getElementById('gateErr').textContent = 'Kata sandi salah, coba lagi.';
+  }
+}
+document.getElementById('btnLogout').addEventListener('click', ()=>{
+  sessionStorage.removeItem(GATE_KEY);
+  location.reload();
+});
+checkGate();
+
+/* ---------- MUMI KELOMPOK ---------- */
+/* ---------- MUMI KELOMPOK - FULL SCAN SYSTEM ---------- */
+let kelHtml5Scanner = null;
+let currentKelKey = null; // format: "Kelompok|YYYY-MM-DD"
+
+function ensureKelSession(kelompok, dateKey){
+  if(!DB.kelompokSessions) DB.kelompokSessions = {};
+  const key = kelompok+'|'+dateKey;
+  if(!DB.kelompokSessions[key]){
+    DB.kelompokSessions[key] = { kelompok:kelompok, tanggal:dateKey, nama:'', closed:false, records:{} };
+  }
+  return DB.kelompokSessions[key];
+}
+
+function initKelompokTab(){
+  document.getElementById('kelTanggal').value = todayStr();
+  
+  document.getElementById('kelompokSelect').addEventListener('change', onKelompokChange);
+  document.getElementById('kelTanggal').addEventListener('change', onKelompokChange);
+  document.getElementById('kelNama').addEventListener('input', ()=>{
+    if(currentKelKey){
+      const s = DB.kelompokSessions[currentKelKey];
+      if(s){ s.nama = document.getElementById('kelNama').value; saveDB(); }
+    }
+  });
+  
+  document.getElementById('btnKelStartScan').addEventListener('click', startKelScanner);
+  document.getElementById('btnKelStopScan').addEventListener('click', stopKelScanner);
+  document.getElementById('kelSearchManual').addEventListener('input', renderKelManualList);
+  document.getElementById('btnKelTutupSesi').addEventListener('click', tutupSesiKelompok);
+  document.getElementById('btnKelResetSesi').addEventListener('click', resetSesiKelompok);
+}
+
+function onKelompokChange(){
+  const kelompok = document.getElementById('kelompokSelect').value;
+  const tgl = document.getElementById('kelTanggal').value || todayStr();
+  
+  if(!kelompok){
+    document.getElementById('kelStats').style.display='none';
+    document.getElementById('kelScanCard').style.display='none';
+    document.getElementById('kelManualCard').style.display='none';
+    document.getElementById('kelRekapCard').style.display='none';
+    return;
+  }
+  
+  currentKelKey = kelompok+'|'+tgl;
+  const s = ensureKelSession(kelompok, tgl);
+  document.getElementById('kelNama').value = s.nama || '';
+  
+  document.getElementById('kelStats').style.display='grid';
+  document.getElementById('kelScanCard').style.display='block';
+  document.getElementById('kelManualCard').style.display='block';
+  document.getElementById('kelRekapCard').style.display='block';
+  
+  renderKelStats();
+  renderKelManualList();
+}
+
+function renderKelStats(){
+  if(!currentKelKey) return;
+  const s = DB.kelompokSessions[currentKelKey];
+  if(!s) return;
+  const anggotaKelompok = ROSTER.filter(p=>p.k===s.kelompok);
+  const counts = {Hadir:0, Izin:0, Sakit:0};
+  Object.values(s.records).forEach(r=>{ if(counts[r.status]!==undefined) counts[r.status]++; });
+  const belum = anggotaKelompok.length - Object.keys(s.records).length;
+  document.getElementById('kelStats').innerHTML = `
+    <div class="stat hadir"><div class="num">${counts.Hadir}</div><div class="lbl">Hadir</div></div>
+    <div class="stat izin"><div class="num">${counts.Izin}</div><div class="lbl">Izin</div></div>
+    <div class="stat sakit"><div class="num">${counts.Sakit}</div><div class="lbl">Sakit</div></div>
+    <div class="stat"><div class="num">${belum}</div><div class="lbl">Belum absen</div></div>`;
+}
+
+function markKelAttendance(personId, status){
+  if(!currentKelKey) return false;
+  const s = DB.kelompokSessions[currentKelKey];
+  if(!s) return false;
+  if(s.closed){ showToast(false, 'Sesi ini sudah ditutup.'); return false; }
+  const p = ROSTER.find(x=>x.i===personId);
+  if(!p) return false;
+  s.records[personId] = { status: status, time: nowTime() };
+  saveDB();
+  renderKelStats();
+  renderKelManualList();
+  syncToGoogleSheets(p.n, p.k+' (Kelompok)', status, nowTime());
+  return p;
+}
+
+function startKelScanner(){
+  document.getElementById('btnKelStartScan').style.display='none';
+  document.getElementById('btnKelStopScan').style.display='block';
+  kelHtml5Scanner = new Html5Qrcode("kelReader");
+  const config = { fps: 10, qrbox: 220 };
+  kelHtml5Scanner.start({ facingMode:"environment" }, config, onKelScanSuccess, ()=>{})
+    .catch(err=>{
+      showToast(false, 'Kamera tidak bisa diakses. Gunakan absen manual.');
+      document.getElementById('btnKelStartScan').style.display='block';
+      document.getElementById('btnKelStopScan').style.display='none';
+    });
+}
+function stopKelScanner(){
+  if(kelHtml5Scanner){
+    kelHtml5Scanner.stop().then(()=>kelHtml5Scanner.clear()).catch(()=>{});
+  }
+  document.getElementById('btnKelStartScan').style.display='block';
+  document.getElementById('btnKelStopScan').style.display='none';
+}
+
+let lastKelScanTs = 0;
+function onKelScanSuccess(decodedText){
+  const now = Date.now();
+  if(now - lastKelScanTs < 1800) return;
+  lastKelScanTs = now;
+  
+  const m = decodedText.match(/^MUMI-(\d+)$/);
+  if(!m){ showToast(false, '❌ Barcode tidak dikenali'); return; }
+  const id = parseInt(m[1],10);
+  
+  const s = DB.kelompokSessions[currentKelKey];
+  const p = ROSTER.find(x=>x.i===id);
+  
+  if(!p){ showToast(false, '❌ ID tidak ditemukan'); return; }
+  if(p.k !== s.kelompok){ showToast(false, '⚠️ '+p.n+' bukan anggota kelompok '+s.kelompok); return; }
+  
+  if(s.records[id]){
+    showToast(false, '⚠️ Sudah absen: '+p.n+' jam '+s.records[id].time);
+    return;
+  }
+  
+  markKelAttendance(id, 'Hadir');
+  showToast(true, `<div class="nm">${p.n}</div>${p.k}<br>✅ Hadir jam ${nowTime()}`);
+}
+
+function renderKelManualList(){
+  if(!currentKelKey) return;
+  const s = DB.kelompokSessions[currentKelKey];
+  if(!s) return;
+  const q = (document.getElementById('kelSearchManual').value||'').toLowerCase().trim();
+  const list = document.getElementById('kelManualList');
+  let people = ROSTER.filter(p=>p.k===s.kelompok);
+  if(q) people = people.filter(p=>p.n.toLowerCase().includes(q));
+  list.innerHTML = people.map(p=>{
+    const r = s.records[p.i];
+    const badge = r? `<span class="badge ${r.status.toLowerCase()}">${r.status} ${r.time}</span>` : `<span class="badge belum">Belum</span>`;
+    return `<div class="prow">
+      <div><div class="nm">${p.n}</div><div class="kl">${p.k}</div></div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${badge}
+        <div class="minibtns">
+          <button class="h" onclick="manualMarkKel(${p.i},'Hadir')">H</button>
+          <button class="i" onclick="manualMarkKel(${p.i},'Izin')">I</button>
+          <button class="s" onclick="manualMarkKel(${p.i},'Sakit')">S</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="prow">Tidak ada nama cocok.</div>';
+}
+function manualMarkKel(id, status){
+  const p = markKelAttendance(id, status);
+  if(p) showToast(true, `${p.n} - ${status} jam ${nowTime()}`);
+}
+
+function tutupSesiKelompok(){
+  if(!currentKelKey) return;
+  const s = DB.kelompokSessions[currentKelKey];
+  if(!confirm('Tutup sesi kelompok '+s.kelompok+' ini? Yang belum absen jadi Alpa.')) return;
+  const anggotaKelompok = ROSTER.filter(p=>p.k===s.kelompok);
+  anggotaKelompok.forEach(p=>{ if(!s.records[p.i]) s.records[p.i] = {status:'Alpa', time:''}; });
+  s.closed = true;
+  saveDB();
+  renderKelStats();
+  renderKelManualList();
+  alert('✅ Sesi ditutup.');
+}
+
+function resetSesiKelompok(){
+  if(!currentKelKey) return;
+  const s = DB.kelompokSessions[currentKelKey];
+  if(!confirm('⚠️ RESET sesi kelompok '+s.kelompok+' tanggal '+s.tanggal+'? Semua data dihapus (untuk libur/uji coba). Yakin?')) return;
+  delete DB.kelompokSessions[currentKelKey];
+  saveDB();
+  alert('✅ Sesi berhasil di-reset.');
+  onKelompokChange();
+}
+
+/* ---------- REKAP KELOMPOK BULANAN ---------- */
+function initRekapKelompokTab(){
+  populateRekapKelBulan();
+  document.getElementById('rekapKelKelompok').addEventListener('change', renderRekapKelompokBulanan);
+  document.getElementById('rekapKelBulan').addEventListener('change', renderRekapKelompokBulanan);
+  renderRekapKelompokBulanan();
+}
+
+function populateRekapKelBulan(){
+  const sel = document.getElementById('rekapKelBulan');
+  const bulanSet = new Set();
+  Object.values(DB.kelompokSessions||{}).forEach(s=>{
+    bulanSet.add(s.tanggal.substring(0,7));
+  });
+  // Tambah bulan ini juga walau belum ada data
+  bulanSet.add(todayStr().substring(0,7));
+  const bulanList = Array.from(bulanSet).sort().reverse();
+  sel.innerHTML = bulanList.map(b=>`<option value="${b}">${formatBulanLabel(b)}</option>`).join('');
+}
+
+function formatBulanLabel(bulanKey){
+  const [y,m] = bulanKey.split('-');
+  const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return namaBulan[parseInt(m)-1]+' '+y;
+}
+
+function renderRekapKelompokBulanan(){
+  const filterKelompok = document.getElementById('rekapKelKelompok').value;
+  const bulanKey = document.getElementById('rekapKelBulan').value || todayStr().substring(0,7);
+  
+  const kelompokList = filterKelompok ? [filterKelompok] : KELOMPOK_STRUKTUR;
+  
+  let html = '';
+  kelompokList.forEach(k=>{
+    const anggotaKelompok = ROSTER.filter(p=>p.k===k);
+    const sesiKelompok = Object.values(DB.kelompokSessions||{}).filter(s=>s.kelompok===k && s.tanggal.substring(0,7)===bulanKey);
+    
+    let totalHadir=0, totalIzin=0, totalSakit=0, totalAlpa=0, totalSlot=0;
+    sesiKelompok.forEach(s=>{
+      Object.values(s.records).forEach(r=>{
+        if(r.status==='Hadir') totalHadir++;
+        else if(r.status==='Izin') totalIzin++;
+        else if(r.status==='Sakit') totalSakit++;
+        else if(r.status==='Alpa') totalAlpa++;
+      });
+      totalSlot += anggotaKelompok.length;
+    });
+    
+    const pct = totalSlot>0 ? Math.round((totalHadir/totalSlot)*1000)/10 : 0;
+    
+    html += `<div style="background:var(--accent-soft);border-radius:10px;padding:14px;margin-bottom:12px;">
+      <h3 style="margin:0 0 8px;color:var(--accent-dark);">${k}</h3>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;">${sesiKelompok.length} sesi pengajian di ${formatBulanLabel(bulanKey)} • ${anggotaKelompok.length} anggota</div>
+      <div class="pctwrap"><div class="pct" style="font-size:24px;">${pct}%</div><div style="font-size:11px;color:var(--ink-soft);">tingkat kehadiran</div></div>
+      <div class="statgrid">
+        <div class="stat hadir"><div class="num">${totalHadir}</div><div class="lbl">Hadir</div></div>
+        <div class="stat izin"><div class="num">${totalIzin}</div><div class="lbl">Izin</div></div>
+        <div class="stat sakit"><div class="num">${totalSakit}</div><div class="lbl">Sakit</div></div>
+        <div class="stat"><div class="num">${totalAlpa}</div><div class="lbl">Alpa</div></div>
+      </div>
+    </div>`;
+  });
+  
+  document.getElementById('rekapKelContent').innerHTML = html || '<p style="color:var(--ink-soft);">Belum ada data untuk bulan ini.</p>';
+}
+
+/* ---------- STRUKTUR PENGURUS ---------- */
+const KELOMPOK_STRUKTUR = ['Al Muhajirin','Bojong Koneng','Kamurang','Sanja','Sentul','Tarikolot'];
+const JABATAN_STRUKTUR = ['Ketua','Wakil','Penerobos','Sekertaris','Keuangan','Keputrian'];
+const JABATAN_DESA = ['Ketua','Wakil 1','Wakil 2','Sekertaris','Bendahara','Penerobos 1','Penerobos 2','Penerobos 3','Kemandirian','Keputrian','Keilmuan'];
+
+const PENGURUS_DESA_DEFAULT = {
+  'Ketua': 'Didan Ardiansyah',
+  'Wakil 1': 'Ferdinan Muhamad Rofik',
+  'Wakil 2': 'Muhammad Rafli Yanwar',
+  'Sekertaris': 'Muhammad Fajar Nurhasan',
+  'Bendahara': 'Addina Uswatun Hasanah',
+  'Penerobos 1': 'Maulana Mudzakir Jamil',
+  'Penerobos 2': 'Muhammad Akmal Jannatan',
+  'Penerobos 3': 'Romadhona Fajri Asadulloh',
+  'Kemandirian': 'Kenny Perdana Sakti',
+  'Keputrian': 'Nurnadilah',
+  'Keilmuan': 'Ahmad Adi Putra'
+};
+
+function renderStrukturTab(){
+  const STORE_STRUKTUR = 'mumi_struktur_v1';
+  const STORE_DESA = 'mumi_struktur_desa_v1';
+  
+  let struktur = {};
+  try{ struktur = JSON.parse(localStorage.getItem(STORE_STRUKTUR)) || {}; }catch(e){}
+  
+  let strukturDesa = {};
+  try{ strukturDesa = JSON.parse(localStorage.getItem(STORE_DESA)) || {}; }catch(e){}
+  // Kalau belum pernah disimpan, pakai default
+  if(Object.keys(strukturDesa).length === 0){
+    strukturDesa = {...PENGURUS_DESA_DEFAULT};
+  }
+  
+  // STRUKTUR DESA - Editable
+  let html = `<div id="successStruktDesa" class="success-msg"></div>
+  <div style="background:var(--gray-soft);border-radius:10px;padding:14px;margin-bottom:16px;border-left:4px solid var(--ink-soft);">
+    <h3 style="margin:0 0 10px;color:var(--ink);font-size:14px;font-weight:700;">🏘️ Struktur Pengurus MUMI Desa (Bisa Diedit)</h3>`;
+  JABATAN_DESA.forEach(j=>{
+    html += `<div style="margin-bottom:8px;">
+      <label style="font-size:12px;font-weight:600;">${j}:</label>
+      <input type="text" id="desa-${j}" value="${strukturDesa[j]||''}" placeholder="Nama pengurus" style="width:100%;padding:8px;font-size:13px;border:1px solid var(--line);border-radius:8px;">
+    </div>`;
+  });
+  html += `<button class="btn" onclick="saveStrukturDesa()" style="width:100%;margin-top:8px;">💾 Simpan Struktur Desa</button>
+  </div>
+  
+  <div id="successStruktKelompok" class="success-msg"></div>
+  <h3 style="color:var(--accent-dark);font-size:14px;margin:16px 0 10px;">👥 Struktur Pengurus MUMI Kelompok (Bisa Diedit)</h3>`;
+  
+  KELOMPOK_STRUKTUR.forEach(k=>{
+    const data = struktur[k] || {};
+    html += `<div style="background:var(--accent-soft);border-radius:10px;padding:12px;margin-bottom:12px;border-left:4px solid var(--accent);">
+      <h3 style="margin:0 0 10px;color:var(--accent-dark);font-size:14px;font-weight:700;">${k}</h3>`;
+    JABATAN_STRUKTUR.forEach(j=>{
+      html += `<div style="margin-bottom:8px;">
+        <label style="font-size:12px;font-weight:600;">${j}:</label>
+        <input type="text" id="struktur-${k}-${j}" value="${data[j]||''}" placeholder="Nama pengurus" style="width:100%;padding:8px;font-size:13px;border:1px solid var(--line);border-radius:8px;">
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  html += `<button class="btn" onclick="saveStrukturPengurus()" style="width:100%;margin-top:12px;">💾 Simpan Semua Struktur Kelompok</button>`;
+  
+  document.getElementById('strukturContent').innerHTML = html;
+}
+
+function saveStrukturDesa(){
+  const STORE_DESA = 'mumi_struktur_desa_v1';
+  const strukturDesa = {};
+  JABATAN_DESA.forEach(j=>{
+    const val = document.getElementById(`desa-${j}`).value.trim();
+    strukturDesa[j] = val;
+  });
+  localStorage.setItem(STORE_DESA, JSON.stringify(strukturDesa));
+  
+  const msg = document.getElementById('successStruktDesa');
+  msg.innerHTML = '✅ Struktur Pengurus MUMI Desa berhasil disimpan!';
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 3000);
+  
+  // Re-render supaya langsung terlihat perubahannya
+  renderStrukturTab();
+}
+
+function saveStrukturPengurus(){
+  const STORE_STRUKTUR = 'mumi_struktur_v1';
+  const struktur = {};
+  KELOMPOK_STRUKTUR.forEach(k=>{
+    struktur[k] = {};
+    JABATAN_STRUKTUR.forEach(j=>{
+      const val = document.getElementById(`struktur-${k}-${j}`).value.trim();
+      if(val) struktur[k][j] = val;
+    });
+  });
+  localStorage.setItem(STORE_STRUKTUR, JSON.stringify(struktur));
+  
+  const msg = document.getElementById('successStruktKelompok');
+  msg.innerHTML = '✅ Struktur Pengurus Kelompok berhasil disimpan!';
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'), 3000);
+  
+  // Re-render supaya langsung terlihat perubahannya
+  renderStrukturTab();
+}
+
+/* ---------- DASHBOARD ---------- */
+let chartDesaTrendInstance = null;
+let chartKelTrendInstance = null;
+let chartKelCompareInstance = null;
+
+function getAllBulanKeys(){
+  const bulanSet = new Set();
+  Object.keys(DB.sessions||{}).forEach(k=> bulanSet.add(k.substring(0,7)));
+  Object.values(DB.kelompokSessions||{}).forEach(s=> bulanSet.add(s.tanggal.substring(0,7)));
+  bulanSet.add(todayStr().substring(0,7));
+  return Array.from(bulanSet).sort();
+}
+
+function hitungPctDesaBulan(bulanKey){
+  const sesiBulanIni = Object.entries(DB.sessions||{}).filter(([tgl,s])=> tgl.substring(0,7)===bulanKey);
+  if(sesiBulanIni.length===0) return null;
+  let totalHadir=0, totalSlot=0;
+  sesiBulanIni.forEach(([tgl,s])=>{
+    const jumlahHadir = Object.values(s.records).filter(r=>r.status==='Hadir').length;
+    totalHadir += jumlahHadir;
+    totalSlot += ROSTER.length;
+  });
+  return totalSlot>0 ? Math.round((totalHadir/totalSlot)*1000)/10 : 0;
+}
+
+function hitungPctKelompokBulan(bulanKey, kelompokFilter){
+  const sesiList = Object.values(DB.kelompokSessions||{}).filter(s=> s.tanggal.substring(0,7)===bulanKey && (!kelompokFilter || s.kelompok===kelompokFilter));
+  if(sesiList.length===0) return null;
+  let totalHadir=0, totalSlot=0;
+  sesiList.forEach(s=>{
+    const anggotaKelompok = ROSTER.filter(p=>p.k===s.kelompok);
+    const jumlahHadir = Object.values(s.records).filter(r=>r.status==='Hadir').length;
+    totalHadir += jumlahHadir;
+    totalSlot += anggotaKelompok.length;
+  });
+  return totalSlot>0 ? Math.round((totalHadir/totalSlot)*1000)/10 : 0;
+}
+
+function initDashboardTab(){
+  const now = new Date();
+  document.getElementById('dashboardTanggalCetak').textContent = 'Dicetak pada: '+fmtDateLabel(todayStr())+' - MUMI Citeureup';
+  
+  const bulanKeys = getAllBulanKeys();
+  const bulanLabels = bulanKeys.map(formatBulanLabel);
+  
+  // === DESA TREND ===
+  const desaData = bulanKeys.map(hitungPctDesaBulan);
+  const bulanIniIdx = bulanKeys.length-1;
+  const bulanIniDesa = desaData[bulanIniIdx];
+  const bulanLaluDesa = bulanIniIdx>0 ? desaData[bulanIniIdx-1] : null;
+  let trendDesaText = '-';
+  if(bulanIniDesa!==null && bulanLaluDesa!==null){
+    const selisih = Math.round((bulanIniDesa-bulanLaluDesa)*10)/10;
+    trendDesaText = selisih>0 ? `⬆️ Naik ${selisih}%` : selisih<0 ? `⬇️ Turun ${Math.abs(selisih)}%` : '➡️ Stabil';
+  }
+  document.getElementById('dashboardDesaSummary').innerHTML = `
+    <div class="stat hadir"><div class="num">${bulanIniDesa!==null?bulanIniDesa+'%':'-'}</div><div class="lbl">Bulan Ini</div></div>
+    <div class="stat"><div class="num">${bulanLaluDesa!==null?bulanLaluDesa+'%':'-'}</div><div class="lbl">Bulan Lalu</div></div>
+    <div class="stat"><div class="num" style="font-size:14px;">${trendDesaText}</div><div class="lbl">Trend</div></div>`;
+  
+  if(chartDesaTrendInstance) chartDesaTrendInstance.destroy();
+  chartDesaTrendInstance = new Chart(document.getElementById('chartDesaTrend'), {
+    type:'line',
+    data:{ labels:bulanLabels, datasets:[{ label:'% Kehadiran MUMI Desa', data:desaData, borderColor:'#2f6b4f', backgroundColor:'rgba(47,107,79,0.15)', fill:true, tension:0.3, spanGaps:true }]},
+    options:{ responsive:true, scales:{ y:{ min:0, max:100, ticks:{callback:v=>v+'%'} } }, plugins:{legend:{display:false}} }
+  });
+  
+  // === KELOMPOK TREND (rata-rata semua kelompok) ===
+  const kelDataAvg = bulanKeys.map(bk=>{
+    const pcts = KELOMPOK_STRUKTUR.map(k=>hitungPctKelompokBulan(bk,k)).filter(v=>v!==null);
+    if(pcts.length===0) return null;
+    return Math.round((pcts.reduce((a,b)=>a+b,0)/pcts.length)*10)/10;
+  });
+  const bulanIniKel = kelDataAvg[bulanIniIdx];
+  const bulanLaluKel = bulanIniIdx>0 ? kelDataAvg[bulanIniIdx-1] : null;
+  let trendKelText = '-';
+  if(bulanIniKel!==null && bulanLaluKel!==null){
+    const selisih = Math.round((bulanIniKel-bulanLaluKel)*10)/10;
+    trendKelText = selisih>0 ? `⬆️ Naik ${selisih}%` : selisih<0 ? `⬇️ Turun ${Math.abs(selisih)}%` : '➡️ Stabil';
+  }
+  document.getElementById('dashboardKelSummary').innerHTML = `
+    <div class="stat hadir"><div class="num">${bulanIniKel!==null?bulanIniKel+'%':'-'}</div><div class="lbl">Bulan Ini</div></div>
+    <div class="stat"><div class="num">${bulanLaluKel!==null?bulanLaluKel+'%':'-'}</div><div class="lbl">Bulan Lalu</div></div>
+    <div class="stat"><div class="num" style="font-size:14px;">${trendKelText}</div><div class="lbl">Trend</div></div>`;
+  
+  if(chartKelTrendInstance) chartKelTrendInstance.destroy();
+  chartKelTrendInstance = new Chart(document.getElementById('chartKelTrend'), {
+    type:'line',
+    data:{ labels:bulanLabels, datasets:[{ label:'% Kehadiran Rata-rata Kelompok', data:kelDataAvg, borderColor:'#b3691c', backgroundColor:'rgba(179,105,28,0.15)', fill:true, tension:0.3, spanGaps:true }]},
+    options:{ responsive:true, scales:{ y:{ min:0, max:100, ticks:{callback:v=>v+'%'} } }, plugins:{legend:{display:false}} }
+  });
+  
+  // === PERBANDINGAN ANTAR KELOMPOK BULAN INI ===
+  const bulanIniKey = bulanKeys[bulanIniIdx];
+  const compareData = KELOMPOK_STRUKTUR.map(k=>hitungPctKelompokBulan(bulanIniKey,k) || 0);
+  const compareColors = KELOMPOK_STRUKTUR.map((k,idx)=>['#2f6b4f','#b3691c','#a13c3c','#2968a8','#5b3fa0','#7a4a12'][idx%6]);
+  
+  if(chartKelCompareInstance) chartKelCompareInstance.destroy();
+  chartKelCompareInstance = new Chart(document.getElementById('chartKelCompare'), {
+    type:'bar',
+    data:{ labels:KELOMPOK_STRUKTUR, datasets:[{ label:'% Kehadiran '+formatBulanLabel(bulanIniKey), data:compareData, backgroundColor:compareColors }]},
+    options:{ responsive:true, scales:{ y:{ min:0, max:100, ticks:{callback:v=>v+'%'} } }, plugins:{legend:{display:false}} }
+  });
+  
+  // === TABEL RINGKASAN ===
+  let tableHtml = `<h3 style="color:var(--accent-dark);font-size:14px;">📋 Ringkasan Data per Bulan</h3>
+  <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+  <tr style="background:var(--gray-soft);"><th style="padding:8px;text-align:left;">Bulan</th><th style="padding:8px;">% Desa</th><th style="padding:8px;">% Kelompok (avg)</th></tr>`;
+  bulanKeys.forEach((bk,idx)=>{
+    tableHtml += `<tr style="border-bottom:1px solid var(--line);">
+      <td style="padding:8px;">${bulanLabels[idx]}</td>
+      <td style="padding:8px;text-align:center;">${desaData[idx]!==null?desaData[idx]+'%':'-'}</td>
+      <td style="padding:8px;text-align:center;">${kelDataAvg[idx]!==null?kelDataAvg[idx]+'%':'-'}</td>
+    </tr>`;
+  });
+  tableHtml += `</table></div>`;
+  document.getElementById('dashboardTableWrap').innerHTML = tableHtml;
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btnPdf = document.getElementById('btnDashboardPdf');
+  if(btnPdf) btnPdf.addEventListener('click', ()=> window.print());
+});
+// Fallback jika DOMContentLoaded sudah lewat
+if(document.readyState === 'complete' || document.readyState === 'interactive'){
+  setTimeout(()=>{
+    const btnPdf = document.getElementById('btnDashboardPdf');
+    if(btnPdf && !btnPdf.dataset.bound){
+      btnPdf.dataset.bound='1';
+      btnPdf.addEventListener('click', ()=> window.print());
+    }
+  }, 500);
+}
+
+
+function initAdminTab(){
+  document.getElementById('btnTestSheet').onclick = ()=>{
+    const url = document.getElementById('sheetUrl').value.trim();
+    if(!url){
+      alert('Paste Google Apps Script URL terlebih dahulu!');
+      return;
+    }
+    
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({action: 'getAbsensi'})
+    }).then(r => r.json()).then(data => {
+      if(data.success){
+        alert('✅ Koneksi Google Sheets OK! Auto-sync sudah aktif.');
+        localStorage.setItem('mumi_sheet_url', url);
+      } else {
+        alert('❌ Gagal koneksi. Pastikan URL benar dan Google Apps Script sudah di-deploy.');
+      }
+    }).catch(err => {
+      alert('❌ Error: '+err.message);
+    });
+  };
+  
+  document.getElementById('btnExportFinal').onclick = ()=>{
+    const data = {
+      database: DB,
+      roster: ROSTER,
+      timestamp: new Date().toISOString()
+    };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mumi-backup-'+todayStr()+'.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  
+  document.getElementById('btnLogout').onclick = ()=>{
+    sessionStorage.removeItem(GATE_KEY);
+    location.reload();
+  };
+  
+  // Load saved Google Sheets URL
+  const savedUrl = localStorage.getItem('mumi_sheet_url');
+  if(savedUrl){
+    document.getElementById('sheetUrl').value = savedUrl;
+  }
+}
+
+/* ---------- GOOGLE SHEETS SYNC ---------- */
+function syncToGoogleSheets(nama, kelompok, status, jam){
+  const sheetUrl = localStorage.getItem('mumi_sheet_url');
+  if(!sheetUrl){
+    console.warn('Google Sheets URL belum dikonfigurasi');
+    return;
+  }
+  
+  const data = {
+    action: 'addAbsensi',
+    no: Date.now(),
+    tanggal: todayStr(),
+    nama: nama,
+    kelompok: kelompok,
+    status: status,
+    jam: jam,
+    keterangan: 'Auto-sync dari aplikasi'
+  };
+  
+  fetch(sheetUrl, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }).then(r => r.json()).then(result => {
+    if(result.success){
+      console.log('✅ Sync ke Google Sheets OK: '+nama);
+    }
+  }).catch(err => {
+    console.error('Error sync Google Sheets:', err);
+  });
+}
+
+/* ---------- INIT ---------- */
+initCetak();
+initScan();
+initRekap();
+renderScanTab();
+</script>
+</body>
+</html>
