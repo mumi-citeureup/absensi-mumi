@@ -1470,32 +1470,62 @@ const GATE_KEY = 'mumi_pengurus_auth';
 const PENGURUS_PASSWORD = 'MUMI2026'; // ganti kata sandi ini sesuai kesepakatan pengurus
 
 function tryEnter(){
+  console.log('tryEnter() called - attempting login');
   const val = document.getElementById('gatePass').value;
+  console.log('Password input value:', val);
+  console.log('Expected password:', PENGURUS_PASSWORD);
+  console.log('Match:', val === PENGURUS_PASSWORD);
+  
   if(val === PENGURUS_PASSWORD){
-    sessionStorage.setItem(GATE_KEY,'1');
+    console.log('✅ Password correct - setting session');
+    try{
+      sessionStorage.setItem(GATE_KEY,'1');
+      console.log('✅ sessionStorage set');
+    }catch(e){
+      console.error('❌ sessionStorage error:', e);
+      localStorage.setItem(GATE_KEY+'_fallback','1'); // Fallback
+    }
     document.getElementById('gate').style.display = 'none';
     document.getElementById('btnLogout').style.display = 'block';
     document.getElementById('gateErr').textContent = '';
+    console.log('✅ Login successful - UI updated');
   } else {
+    console.log('❌ Password incorrect');
     document.getElementById('gateErr').textContent = '❌ Kata sandi salah, coba lagi.';
   }
 }
 
 function checkGate(){
-  if(sessionStorage.getItem(GATE_KEY)==='1'){
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('btnLogout').style.display = 'block';
+  try{
+    const sessionOK = sessionStorage.getItem(GATE_KEY)==='1';
+    const fallbackOK = localStorage.getItem(GATE_KEY+'_fallback')==='1';
+    
+    if(sessionOK || fallbackOK){
+      console.log('✅ User already logged in - hiding gate');
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('btnLogout').style.display = 'block';
+    }
+  }catch(e){
+    console.error('checkGate error:', e);
   }
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  console.log('DOMContentLoaded event fired');
   document.getElementById('btnGateEnter').addEventListener('click', tryEnter);
   document.getElementById('gatePass').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryEnter(); });
   document.getElementById('btnLogout').addEventListener('click', ()=>{
-    sessionStorage.removeItem(GATE_KEY);
+    console.log('Logout clicked');
+    try{
+      sessionStorage.removeItem(GATE_KEY);
+    }catch(e){}
+    try{
+      localStorage.removeItem(GATE_KEY+'_fallback');
+    }catch(e){}
     location.reload();
   });
   checkGate();
+  console.log('✅ DOMContentLoaded setup complete');
 });
 
 // Fallback jika DOMContentLoaded sudah lewat
@@ -1503,16 +1533,23 @@ if(document.readyState === 'loading'){
   // Event listener sudah di-attach di atas
 } else {
   // Page sudah loaded
+  console.log('Page already loaded - attaching fallback listeners');
   try{
     document.getElementById('btnGateEnter').addEventListener('click', tryEnter);
     document.getElementById('gatePass').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryEnter(); });
     document.getElementById('btnLogout').addEventListener('click', ()=>{
-      sessionStorage.removeItem(GATE_KEY);
+      console.log('Logout clicked (fallback)');
+      try{
+        sessionStorage.removeItem(GATE_KEY);
+      }catch(e){}
+      try{
+        localStorage.removeItem(GATE_KEY+'_fallback');
+      }catch(e){}
       location.reload();
     });
     checkGate();
   }catch(e){
-    console.error('Login setup error:', e);
+    console.error('Fallback login setup error:', e);
   }
 }
 
