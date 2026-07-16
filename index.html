@@ -209,8 +209,10 @@
   .org-card .avatar{
     width:44px; height:44px; border-radius:50%; margin:0 auto 8px; display:flex;
     align-items:center; justify-content:center; font-weight:800; font-size:15px; color:#fff;
+    overflow:hidden; background-size:cover; background-position:center;
   }
   .org-card.top .avatar{width:52px; height:52px; font-size:17px;}
+  .org-card .avatar img{width:100%; height:100%; object-fit:cover; display:block;}
   .org-card .role{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-dark); margin-bottom:2px;}
   .org-card .name{font-size:13px; font-weight:700; color:var(--ink); line-height:1.3;}
   .org-card .name.empty{color:var(--gray); font-weight:500; font-style:italic;}
@@ -220,6 +222,31 @@
   }
   .org-kelompok-group h4{
     margin:0 0 16px; text-align:center; font-size:14px; font-weight:800; color:var(--accent-dark);
+  }
+  /* --- multi-orang per jabatan (tier bisa berisi banyak card sejenis) --- */
+  .org-jab-group{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .org-jab-group .jab-caption{font-size:10px; font-weight:700; color:var(--gray); text-transform:uppercase; letter-spacing:.03em;}
+  .org-jab-cards{display:flex; flex-wrap:wrap; justify-content:center; gap:10px;}
+
+  /* --- edit form: multi-orang per jabatan --- */
+  .struktur-field.multi{border:1px solid var(--line); border-radius:10px; padding:10px; background:#fbfbf8;}
+  .struktur-field.multi label.grouplbl{font-size:12px; font-weight:700; color:var(--accent-dark); margin-bottom:8px;}
+  .foto-person-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px;}
+  .foto-person-row:last-child{margin-bottom:0;}
+  .foto-thumb{
+    width:38px; height:38px; border-radius:50%; flex-shrink:0; overflow:hidden; background:var(--gray-soft);
+    display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--gray); cursor:pointer;
+    border:1px dashed var(--line);
+  }
+  .foto-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .foto-person-row input[type=text]{flex:1; padding:8px 10px; font-size:13px;}
+  .btn-remove-person{
+    border:none; background:var(--bad-soft); color:var(--bad); width:30px; height:30px; border-radius:8px;
+    font-size:15px; font-weight:700; cursor:pointer; flex-shrink:0;
+  }
+  .btn-add-person{
+    width:100%; margin-top:2px; padding:8px; border:1px dashed var(--accent); background:var(--accent-soft);
+    color:var(--accent-dark); border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;
   }
 
   /* --- Struktur edit form --- */
@@ -1964,29 +1991,28 @@ function renderRekapKelompokBulanan(){
 
 /* ---------- STRUKTUR PENGURUS ---------- */
 const KELOMPOK_STRUKTUR = ['Al Muhajirin','Bojong Koneng','Kamurang','Sanja','Sentul','Tarikolot'];
+// Setiap jabatan sekarang bisa diisi banyak orang (1 s/d N), tinggal klik "+ Tambah Orang"
 const JABATAN_STRUKTUR = ['Ketua','Wakil','Penerobos','Sekertaris','Keuangan','Keputrian'];
-const JABATAN_DESA = ['Ketua','Wakil 1','Wakil 2','Sekertaris','Bendahara','Penerobos 1','Penerobos 2','Penerobos 3','Kemandirian','Keputrian','Keilmuan'];
+const JABATAN_DESA = ['Ketua','Wakil','Sekertaris','Bendahara','Penerobos','Kemandirian','Keputrian','Keilmuan'];
 
+// Format data baru: setiap jabatan -> array of {n:nama, f:fotoBase64}
 const PENGURUS_DESA_DEFAULT = {
-  'Ketua': 'Didan Ardiansyah',
-  'Wakil 1': 'Ferdinan Muhamad Rofik',
-  'Wakil 2': 'Muhammad Rafli Yanwar',
-  'Sekertaris': 'Muhammad Fajar Nurhasan',
-  'Bendahara': 'Addina Uswatun Hasanah',
-  'Penerobos 1': 'Maulana Mudzakir Jamil',
-  'Penerobos 2': 'Muhammad Akmal Jannatan',
-  'Penerobos 3': 'Romadhona Fajri Asadulloh',
-  'Kemandirian': 'Kenny Perdana Sakti',
-  'Keputrian': 'Nurnadilah',
-  'Keilmuan': 'Ahmad Adi Putra'
+  'Ketua': [{n:'Didan Ardiansyah', f:''}],
+  'Wakil': [{n:'Ferdinan Muhamad Rofik', f:''}, {n:'Muhammad Rafli Yanwar', f:''}],
+  'Sekertaris': [{n:'Muhammad Fajar Nurhasan', f:''}],
+  'Bendahara': [{n:'Addina Uswatun Hasanah', f:''}],
+  'Penerobos': [{n:'Maulana Mudzakir Jamil', f:''}, {n:'Muhammad Akmal Jannatan', f:''}, {n:'Romadhona Fajri Asadulloh', f:''}],
+  'Kemandirian': [{n:'Kenny Perdana Sakti', f:''}],
+  'Keputrian': [{n:'Nurnadilah', f:''}],
+  'Keilmuan': [{n:'Ahmad Adi Putra', f:''}]
 };
 
 // Susunan jenjang untuk bagan (tier-based, dari pucuk pimpinan ke bawah)
 const TIER_DESA = [
   ['Ketua'],
-  ['Wakil 1','Wakil 2'],
+  ['Wakil'],
   ['Sekertaris','Bendahara'],
-  ['Penerobos 1','Penerobos 2','Penerobos 3','Kemandirian','Keputrian','Keilmuan']
+  ['Penerobos','Kemandirian','Keputrian','Keilmuan']
 ];
 const TIER_KELOMPOK = [
   ['Ketua'],
@@ -2004,19 +2030,38 @@ function colorFor(seed){
   let h=0; for(let i=0;i<seed.length;i++) h = (h*31 + seed.charCodeAt(i)) >>> 0;
   return ORG_COLORS[h % ORG_COLORS.length];
 }
-function orgCardHtml(jabatan, nama, isTop){
-  const has = nama && nama.trim();
+// Normalisasi: dukung data lama (string tunggal) maupun data baru (array of {n,f})
+function toPersonArray(val){
+  if(Array.isArray(val)) return val.filter(p=>p && (p.n||'').trim());
+  if(typeof val === 'string' && val.trim()) return [{n:val.trim(), f:''}];
+  return [];
+}
+function orgCardHtml(jabatan, person, isTop){
+  const nama = person && person.n ? person.n.trim() : '';
+  const foto = person && person.f ? person.f : '';
+  const has = !!nama;
   const bg = has ? colorFor(nama) : '#c7c7c2';
+  const avatarInner = foto
+    ? `<img src="${foto}" alt="${nama}">`
+    : (has ? initials(nama) : '?');
   return `<div class="org-card${isTop?' top':''}">
-    <div class="avatar" style="background:${bg};">${has ? initials(nama) : '?'}</div>
+    <div class="avatar" style="${foto?'':'background:'+bg+';'}">${avatarInner}</div>
     <div class="role">${jabatan}</div>
     <div class="name${has?'':' empty'}">${has ? nama : 'Belum diisi'}</div>
   </div>`;
 }
 function orgTiersHtml(tiers, data){
   return tiers.map((tier,idx)=>{
-    const cards = tier.map(j=>orgCardHtml(j, data[j], idx===0)).join('');
-    return `<div class="org-tier">${cards}</div>`;
+    const groups = tier.map(j=>{
+      const people = toPersonArray(data[j]);
+      const list = people.length ? people : [null]; // tampilkan 1 slot kosong jika belum diisi
+      const cards = list.map(p=>orgCardHtml(j, p, idx===0)).join('');
+      return `<div class="org-jab-group">
+        <div class="jab-caption">${j}${people.length>1?' ('+people.length+')':''}</div>
+        <div class="org-jab-cards">${cards}</div>
+      </div>`;
+    }).join('');
+    return `<div class="org-tier">${groups}</div>`;
   }).join('');
 }
 
@@ -2032,7 +2077,7 @@ function renderStrukturTab(){
   let strukturDesa = {};
   try{ strukturDesa = JSON.parse(localStorage.getItem(STORE_DESA)) || {}; }catch(e){}
   if(Object.keys(strukturDesa).length === 0){
-    strukturDesa = {...PENGURUS_DESA_DEFAULT};
+    strukturDesa = JSON.parse(JSON.stringify(PENGURUS_DESA_DEFAULT));
   }
 
   if(mode === 'bagan'){
@@ -2061,15 +2106,90 @@ function renderStrukturBagan(strukturDesa, struktur){
   document.getElementById('strukturContent').innerHTML = html;
 }
 
+// Helper: baca file foto jadi base64 lalu masukkan ke <img> thumbnail + simpan di dataset
+function bindFotoPicker(thumbEl, inputFileEl){
+  inputFileEl.addEventListener('change', ()=>{
+    const file = inputFileEl.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const dataUrl = e.target.result;
+      thumbEl.dataset.foto = dataUrl;
+      thumbEl.innerHTML = `<img src="${dataUrl}" alt="foto">`;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function personRowHtml(prefix, idx, person){
+  const nama = person && person.n ? person.n : '';
+  const foto = person && person.f ? person.f : '';
+  const thumbId = `${prefix}-thumb-${idx}`;
+  const fileId = `${prefix}-file-${idx}`;
+  return `<div class="foto-person-row" data-idx="${idx}">
+    <div class="foto-thumb" id="${thumbId}" data-foto="${foto?foto:''}" onclick="document.getElementById('${fileId}').click()" title="Klik untuk pilih foto">
+      ${foto ? `<img src="${foto}" alt="foto">` : '📷'}
+    </div>
+    <input type="file" id="${fileId}" accept="image/*" style="display:none">
+    <input type="text" class="person-name" value="${nama}" placeholder="Nama pengurus">
+    <button type="button" class="btn-remove-person" onclick="this.closest('.foto-person-row').remove()">✕</button>
+  </div>`;
+}
+
+function multiFieldHtml(prefix, jabatan, people){
+  const list = people.length ? people : [{n:'',f:''}];
+  const rows = list.map((p,idx)=>personRowHtml(`${prefix}-${jabatan}`, idx, p)).join('');
+  return `<div class="struktur-field multi" data-jabatan="${jabatan}" data-prefix="${prefix}">
+    <label class="grouplbl">${jabatan}</label>
+    <div class="person-rows">${rows}</div>
+    <button type="button" class="btn-add-person" onclick="addPersonRow(this)">➕ Tambah Orang</button>
+  </div>`;
+}
+
+function addPersonRow(btn){
+  const wrap = btn.closest('.struktur-field.multi');
+  const jabatan = wrap.dataset.jabatan;
+  const prefix = wrap.dataset.prefix;
+  const rowsWrap = wrap.querySelector('.person-rows');
+  const idx = rowsWrap.children.length;
+  const div = document.createElement('div');
+  div.innerHTML = personRowHtml(`${prefix}-${jabatan}`, idx, null);
+  const newRow = div.firstElementChild;
+  rowsWrap.appendChild(newRow);
+  // bind foto picker untuk row baru
+  const thumb = newRow.querySelector('.foto-thumb');
+  const fileInput = newRow.querySelector('input[type=file]');
+  bindFotoPicker(thumb, fileInput);
+}
+
+function bindAllFotoPickers(container){
+  container.querySelectorAll('.foto-person-row').forEach(row=>{
+    const thumb = row.querySelector('.foto-thumb');
+    const fileInput = row.querySelector('input[type=file]');
+    if(thumb && fileInput) bindFotoPicker(thumb, fileInput);
+  });
+}
+
+function readPeopleFromField(fieldEl){
+  const rows = fieldEl.querySelectorAll('.foto-person-row');
+  const people = [];
+  rows.forEach(row=>{
+    const nama = row.querySelector('.person-name').value.trim();
+    const thumb = row.querySelector('.foto-thumb');
+    const foto = thumb ? (thumb.dataset.foto || '') : '';
+    if(nama) people.push({n:nama, f:foto});
+  });
+  return people;
+}
+
 function renderStrukturEdit(strukturDesa, struktur){
   let html = `<div id="successStruktDesa" class="success-msg"></div>
   <div class="struktur-editcard" style="border-left:4px solid var(--ink-soft);">
-    <h3>🏘️ Struktur Pengurus MUMI Desa</h3>`;
+    <h3>🏘️ Struktur Pengurus MUMI Desa</h3>
+    <p class="sub" style="margin-top:-6px;">Klik ikon 📷 untuk pasang foto. Klik "➕ Tambah Orang" untuk jabatan yang diisi lebih dari satu orang (misalnya Penerobos 1-4 dst).</p>`;
   JABATAN_DESA.forEach(j=>{
-    html += `<div class="struktur-field">
-      <label>${j}</label>
-      <input type="text" id="desa-${j}" value="${strukturDesa[j]||''}" placeholder="Nama pengurus">
-    </div>`;
+    const people = toPersonArray(strukturDesa[j]);
+    html += multiFieldHtml('desa', j, people);
   });
   html += `<button class="btn" onclick="saveStrukturDesa()" style="width:100%;margin-top:6px;">💾 Simpan Struktur Desa</button>
   </div>
@@ -2082,16 +2202,15 @@ function renderStrukturEdit(strukturDesa, struktur){
     html += `<div class="struktur-editcard" style="border-left:4px solid var(--accent); background:var(--accent-soft);">
       <h3 style="color:var(--accent-dark);">${k}</h3>`;
     JABATAN_STRUKTUR.forEach(j=>{
-      html += `<div class="struktur-field">
-        <label>${j}</label>
-        <input type="text" id="struktur-${k}-${j}" value="${data[j]||''}" placeholder="Nama pengurus">
-      </div>`;
+      const people = toPersonArray(data[j]);
+      html += multiFieldHtml(`kel-${k}`, j, people);
     });
     html += `</div>`;
   });
   html += `<button class="btn" onclick="saveStrukturPengurus()" style="width:100%;margin-top:6px;">💾 Simpan Semua Struktur Kelompok</button>`;
 
   document.getElementById('strukturContent').innerHTML = html;
+  bindAllFotoPickers(document.getElementById('strukturContent'));
 }
 
 document.getElementById('strukturModeSwitch').addEventListener('click', (e)=>{
@@ -2107,8 +2226,8 @@ function saveStrukturDesa(){
   const STORE_DESA = 'mumi_struktur_desa_v1';
   const strukturDesa = {};
   JABATAN_DESA.forEach(j=>{
-    const val = document.getElementById(`desa-${j}`).value.trim();
-    strukturDesa[j] = val;
+    const fieldEl = document.querySelector(`#strukturContent .struktur-field.multi[data-jabatan="${j}"][data-prefix="desa"]`);
+    strukturDesa[j] = fieldEl ? readPeopleFromField(fieldEl) : [];
   });
   localStorage.setItem(STORE_DESA, JSON.stringify(strukturDesa));
 
@@ -2130,15 +2249,16 @@ function saveStrukturPengurus(){
   KELOMPOK_STRUKTUR.forEach(k=>{
     struktur[k] = {};
     JABATAN_STRUKTUR.forEach(j=>{
-      const val = document.getElementById(`struktur-${k}-${j}`).value.trim();
-      if(val) struktur[k][j] = val;
+      const fieldEl = document.querySelector(`#strukturContent .struktur-field.multi[data-jabatan="${j}"][data-prefix="kel-${k}"]`);
+      const people = fieldEl ? readPeopleFromField(fieldEl) : [];
+      if(people.length) struktur[k][j] = people;
     });
   });
   localStorage.setItem(STORE_STRUKTUR, JSON.stringify(struktur));
 
   let strukturDesa = {};
   try{ strukturDesa = JSON.parse(localStorage.getItem('mumi_struktur_desa_v1')) || {}; }catch(e){}
-  if(Object.keys(strukturDesa).length === 0) strukturDesa = {...PENGURUS_DESA_DEFAULT};
+  if(Object.keys(strukturDesa).length === 0) strukturDesa = JSON.parse(JSON.stringify(PENGURUS_DESA_DEFAULT));
 
   renderStrukturEdit(strukturDesa, struktur);
   const msg = document.getElementById('successStruktKelompok');
