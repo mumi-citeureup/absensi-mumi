@@ -44,28 +44,34 @@
   /* Hamburger menu button */
   .hamburger{
     display:none; background:none; border:none; color:#fff;
-    font-size:14px; cursor:pointer; padding:8px 12px; margin:0;
-    line-height:1; flex-shrink:0; font-weight:600; text-transform:uppercase;
-    letter-spacing:0.5px; transition:opacity 0.2s;
+    font-size:26px; cursor:pointer; padding:4px 10px; margin:0;
+    line-height:1; flex-shrink:0; font-weight:600;
   }
-  .hamburger.active { opacity:0.7; }
-  .hamburger:not(.active) { opacity:1; }
   
-  /* Mobile menu dropdown */
+  /* Mobile menu overlay - full screen, always on top */
   #navMobile{
-    display:none; position:fixed; top:56px; left:0; right:0;
-    background:var(--accent-dark); z-index:19; 
-    flex-direction:column; box-shadow:0 4px 10px rgba(0,0,0,0.2);
-    max-height:calc(100vh - 80px); overflow-y:auto;
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:var(--accent-dark); z-index:9999;
+    flex-direction:column; overflow-y:auto; padding-top:8px;
   }
-  #navMobile button{
-    flex:none; width:100%; padding:14px 16px; border:none; 
-    background:none; color:#e4efe8; text-align:left; font-size:14px;
+  #navMobile.open{display:flex;}
+  #navMobileHeader{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.15);
+  }
+  #navMobileHeader span{color:#fff; font-weight:700; font-size:15px;}
+  #btnMenuClose{
+    background:none; border:none; color:#fff; font-size:26px; cursor:pointer;
+    padding:4px 10px; line-height:1;
+  }
+  #navMobile button.navlink{
+    flex:none; width:100%; padding:16px 16px; border:none; 
+    background:none; color:#e4efe8; text-align:left; font-size:15px;
     font-weight:600; border-bottom:1px solid rgba(255,255,255,0.1);
     cursor:pointer; border-radius:0;
   }
-  #navMobile button:active{background:rgba(255,255,255,0.1);}
-  #navMobile button.active{background:rgba(255,255,255,0.2); color:#fff;}
+  #navMobile button.navlink:active{background:rgba(255,255,255,0.15);}
+  #navMobile button.navlink.active{background:rgba(255,255,255,0.2); color:#fff;}
   
   @media(max-width:768px){
     header{
@@ -79,8 +85,6 @@
     }
     nav{display:none !important; margin:0; padding:0; background:none;}
     .hamburger{display:block;}
-    #navMobile{display:flex;}
-    #navMobile.hidden{display:none !important;}
   }
   @media(min-width:769px){
     .hamburger{display:none !important;}
@@ -90,23 +94,26 @@
   main{max-width:900px; margin:0 auto; padding:16px;}
   .card{
     background:var(--card); border:1px solid var(--line); border-radius:14px;
-    padding:16px; margin-bottom:14px;
+    padding:18px; margin-bottom:14px; box-shadow:0 1px 3px rgba(31,42,34,0.04);
   }
-  .card h2{margin:0 0 4px; font-size:15px;}
-  .card .sub{color:var(--ink-soft); font-size:12.5px; margin:0 0 12px;}
+  .card h2{margin:0 0 4px; font-size:15px; letter-spacing:-0.01em;}
+  .card .sub{color:var(--ink-soft); font-size:12.5px; margin:0 0 12px; line-height:1.5;}
   select, input[type=date], input[type=text]{
     width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px;
-    font-size:14px; background:#fff; color:var(--ink);
+    font-size:14px; background:#fff; color:var(--ink); transition:border-color .15s;
   }
+  select:focus, input:focus{outline:none; border-color:var(--accent);}
   .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
   .row > *{flex:1; min-width:140px;}
   button.btn{
     padding:10px 16px; border-radius:9px; border:1px solid var(--accent);
     background:var(--accent); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer;
+    transition:transform .1s, opacity .15s;
   }
   button.btn.ghost{background:#fff; color:var(--accent-dark);}
   button.btn.small{padding:6px 10px; font-size:12.5px;}
   button.btn:active{transform:scale(0.98);}
+  button.btn:hover{opacity:0.92;}
   .statgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; margin-top:10px;}
   .stat{background:var(--gray-soft); border-radius:10px; padding:10px 12px;}
   .stat .num{font-size:22px; font-weight:700; line-height:1.1;}
@@ -169,6 +176,60 @@
   .hint{font-size:12px; color:var(--ink-soft); background:var(--gray-soft); border-radius:9px; padding:10px 12px; margin-top:10px;}
   .pct{font-size:34px; font-weight:800; color:var(--accent-dark);}
   .pctwrap{display:flex; align-items:baseline; gap:8px;}
+
+  /* --- Segmented control (toggle bagan/edit) --- */
+  .segctrl{
+    display:flex; gap:3px; background:var(--gray-soft); padding:3px; border-radius:10px; flex-shrink:0;
+  }
+  .seg-btn{
+    border:none; background:transparent; padding:8px 14px; border-radius:8px;
+    font-size:12.5px; font-weight:600; color:var(--ink-soft); cursor:pointer;
+    white-space:nowrap;
+  }
+  .seg-btn.active{background:#fff; color:var(--accent-dark); box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+  /* --- Bagan struktur organisasi --- */
+  .org-wrap{display:flex; flex-direction:column; align-items:center; gap:0;}
+  .org-block-title{
+    text-align:center; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); margin:22px 0 12px;
+  }
+  .org-block-title:first-child{margin-top:0;}
+  .org-tier{display:flex; flex-wrap:wrap; justify-content:center; gap:14px 10px; position:relative; width:100%;}
+  .org-tier + .org-tier{margin-top:22px;}
+  .org-tier + .org-tier::before{
+    content:""; position:absolute; top:-22px; left:50%; width:2px; height:22px;
+    background:var(--line); transform:translateX(-1px);
+  }
+  .org-card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px 14px;
+    width:150px; text-align:center; position:relative; box-shadow:0 1px 2px rgba(31,42,34,0.04);
+  }
+  .org-card.top{width:180px; border-color:var(--accent); background:var(--accent-soft);}
+  .org-card .avatar{
+    width:44px; height:44px; border-radius:50%; margin:0 auto 8px; display:flex;
+    align-items:center; justify-content:center; font-weight:800; font-size:15px; color:#fff;
+  }
+  .org-card.top .avatar{width:52px; height:52px; font-size:17px;}
+  .org-card .role{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--accent-dark); margin-bottom:2px;}
+  .org-card .name{font-size:13px; font-weight:700; color:var(--ink); line-height:1.3;}
+  .org-card .name.empty{color:var(--gray); font-weight:500; font-style:italic;}
+  .org-kelompok-group{
+    border:1px dashed var(--line); border-radius:16px; padding:20px 16px 16px; margin-bottom:18px; width:100%; max-width:640px;
+    background:rgba(255,255,255,0.5);
+  }
+  .org-kelompok-group h4{
+    margin:0 0 16px; text-align:center; font-size:14px; font-weight:800; color:var(--accent-dark);
+  }
+
+  /* --- Struktur edit form --- */
+  .struktur-editcard{
+    background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px;
+  }
+  .struktur-editcard h3{margin:0 0 12px; font-size:14px; font-weight:700; color:var(--accent-dark); display:flex; align-items:center; gap:8px;}
+  .struktur-field{margin-bottom:10px;}
+  .struktur-field label{display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-bottom:4px;}
+  .struktur-field input{width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:9px; font-size:13.5px;}
 
   @media print{
     header, nav, .noprint{display:none !important;}
@@ -279,7 +340,7 @@
 <div id="scanToast" class="noprint"></div>
 
 <header>
-  <button class="hamburger noprint" id="btnMenu">Menu</button>
+  <button class="hamburger noprint" id="btnMenu">☰</button>
   <div class="header-content">
     <h1>Absensi Pengajian MUMI Citeureup</h1>
     <p>Scan barcode &middot; rekap otomatis &middot; gratis, jalan langsung di browser</p>
@@ -298,18 +359,22 @@
   </nav>
 </header>
 
-<nav class="noprint hidden" id="navMobile">
-  <button data-tab="scan" class="active">📱 Scan Absensi</button>
-  <button data-tab="kelompok">👥 MUMI Kelompok</button>
-  <button data-tab="rekap">📋 Rekap Desa</button>
-  <button data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
-  <button data-tab="dashboard">📈 Dashboard</button>
-  <button data-tab="cetak">🖨️ Cetak Barcode</button>
-  <button data-tab="daftar">➕ Daftar Anggota</button>
-  <button data-tab="edit">✏️ Edit Data</button>
-  <button data-tab="struktur">⚙️ Struktur Pengurus</button>
-  <button data-tab="admin">ℹ️ Admin & WhatsApp</button>
-</nav>
+<div class="noprint" id="navMobile">
+  <div id="navMobileHeader">
+    <span>Menu</span>
+    <button id="btnMenuClose">✕</button>
+  </div>
+  <button class="navlink" data-tab="scan">📱 Scan Absensi</button>
+  <button class="navlink" data-tab="kelompok">👥 MUMI Kelompok</button>
+  <button class="navlink" data-tab="rekap">📋 Rekap Desa</button>
+  <button class="navlink" data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
+  <button class="navlink" data-tab="dashboard">📈 Dashboard</button>
+  <button class="navlink" data-tab="cetak">🖨️ Cetak Barcode</button>
+  <button class="navlink" data-tab="daftar">➕ Daftar Anggota</button>
+  <button class="navlink" data-tab="edit">✏️ Edit Data</button>
+  <button class="navlink" data-tab="struktur">⚙️ Struktur Pengurus</button>
+  <button class="navlink" data-tab="admin">ℹ️ Admin & WhatsApp</button>
+</div>
 
 <main>
 
@@ -658,9 +723,17 @@
 <!-- TAB STRUKTUR PENGURUS -->
 <section id="tab-struktur" style="display:none">
   <div class="card">
-    <h2>⚙️ Struktur Pengurus MUMI Kelompok</h2>
-    <p class="sub">Input nama pengurus untuk setiap kelompok. Data tersimpan otomatis.</p>
-    <div id="strukturContent"></div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+      <div>
+        <h2 style="margin-bottom:2px;">🏛️ Struktur Pengurus</h2>
+        <p class="sub" style="margin:0;">Bagan organisasi MUMI Desa &amp; Kelompok. Klik "Edit Struktur" untuk mengubah nama.</p>
+      </div>
+      <div class="segctrl noprint" id="strukturModeSwitch">
+        <button type="button" class="seg-btn active" data-mode="bagan">🗂️ Bagan</button>
+        <button type="button" class="seg-btn" data-mode="edit">✏️ Edit Struktur</button>
+      </div>
+    </div>
+    <div id="strukturContent" style="margin-top:14px;"></div>
   </div>
 </section>
 
@@ -811,19 +884,19 @@ function fmtDateLabel(dateKey){
 /* ---------- NAV ---------- */
 // Hamburger menu toggle
 document.getElementById('btnMenu').addEventListener('click', ()=>{
-  const navMobile = document.getElementById('navMobile');
-  const btnMenu = document.getElementById('btnMenu');
-  navMobile.classList.toggle('hidden');
-  btnMenu.classList.toggle('active');
+  document.getElementById('navMobile').classList.add('open');
+});
+document.getElementById('btnMenuClose').addEventListener('click', ()=>{
+  document.getElementById('navMobile').classList.remove('open');
 });
 
 // Nav buttons (desktop + mobile)
-document.querySelectorAll('nav button, #navMobile button').forEach(btn=>{
+document.querySelectorAll('nav button, #navMobile button.navlink').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     // Update active state di kedua nav
-    document.querySelectorAll('nav button, #navMobile button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('nav button, #navMobile button.navlink').forEach(b=>b.classList.remove('active'));
     // Set active di button yang di-klik dan pasangannya di nav yang lain
-    document.querySelectorAll(`nav button[data-tab="${btn.dataset.tab}"], #navMobile button[data-tab="${btn.dataset.tab}"]`).forEach(b=>b.classList.add('active'));
+    document.querySelectorAll(`nav button[data-tab="${btn.dataset.tab}"], #navMobile button.navlink[data-tab="${btn.dataset.tab}"]`).forEach(b=>b.classList.add('active'));
     
     // Toggle tab content
     ['cetak','scan','rekap','daftar','edit','pengurus','kelompok','struktur','admin','rekap-kelompok','dashboard'].forEach(t=>{
@@ -832,12 +905,7 @@ document.querySelectorAll('nav button, #navMobile button').forEach(btn=>{
     });
     
     // Close mobile menu setelah pilih
-    const navMobile = document.getElementById('navMobile');
-    const btnMenu = document.getElementById('btnMenu');
-    if(!navMobile.classList.contains('hidden')){
-      navMobile.classList.add('hidden');
-      btnMenu.classList.remove('active');
-    }
+    document.getElementById('navMobile').classList.remove('open');
     
     // Render tab content
     if(btn.dataset.tab==='scan') renderScanTab();
@@ -1913,52 +1981,127 @@ const PENGURUS_DESA_DEFAULT = {
   'Keilmuan': 'Ahmad Adi Putra'
 };
 
+// Susunan jenjang untuk bagan (tier-based, dari pucuk pimpinan ke bawah)
+const TIER_DESA = [
+  ['Ketua'],
+  ['Wakil 1','Wakil 2'],
+  ['Sekertaris','Bendahara'],
+  ['Penerobos 1','Penerobos 2','Penerobos 3','Kemandirian','Keputrian','Keilmuan']
+];
+const TIER_KELOMPOK = [
+  ['Ketua'],
+  ['Wakil'],
+  ['Sekertaris','Keuangan','Penerobos','Keputrian']
+];
+const ORG_COLORS = ['#2f6b4f','#b3691c','#2968a8','#5b3fa0','#a13c3c','#0f766e','#9d5b13','#4c5fd5'];
+
+function initials(name){
+  if(!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+function colorFor(seed){
+  let h=0; for(let i=0;i<seed.length;i++) h = (h*31 + seed.charCodeAt(i)) >>> 0;
+  return ORG_COLORS[h % ORG_COLORS.length];
+}
+function orgCardHtml(jabatan, nama, isTop){
+  const has = nama && nama.trim();
+  const bg = has ? colorFor(nama) : '#c7c7c2';
+  return `<div class="org-card${isTop?' top':''}">
+    <div class="avatar" style="background:${bg};">${has ? initials(nama) : '?'}</div>
+    <div class="role">${jabatan}</div>
+    <div class="name${has?'':' empty'}">${has ? nama : 'Belum diisi'}</div>
+  </div>`;
+}
+function orgTiersHtml(tiers, data){
+  return tiers.map((tier,idx)=>{
+    const cards = tier.map(j=>orgCardHtml(j, data[j], idx===0)).join('');
+    return `<div class="org-tier">${cards}</div>`;
+  }).join('');
+}
+
 function renderStrukturTab(){
   const STORE_STRUKTUR = 'mumi_struktur_v1';
   const STORE_DESA = 'mumi_struktur_desa_v1';
-  
+  const modeWrap = document.getElementById('strukturModeSwitch');
+  let mode = modeWrap.dataset.mode || 'bagan';
+
   let struktur = {};
   try{ struktur = JSON.parse(localStorage.getItem(STORE_STRUKTUR)) || {}; }catch(e){}
-  
+
   let strukturDesa = {};
   try{ strukturDesa = JSON.parse(localStorage.getItem(STORE_DESA)) || {}; }catch(e){}
-  // Kalau belum pernah disimpan, pakai default
   if(Object.keys(strukturDesa).length === 0){
     strukturDesa = {...PENGURUS_DESA_DEFAULT};
   }
-  
-  // STRUKTUR DESA - Editable
-  let html = `<div id="successStruktDesa" class="success-msg"></div>
-  <div style="background:var(--gray-soft);border-radius:10px;padding:14px;margin-bottom:16px;border-left:4px solid var(--ink-soft);">
-    <h3 style="margin:0 0 10px;color:var(--ink);font-size:14px;font-weight:700;">🏘️ Struktur Pengurus MUMI Desa (Bisa Diedit)</h3>`;
-  JABATAN_DESA.forEach(j=>{
-    html += `<div style="margin-bottom:8px;">
-      <label style="font-size:12px;font-weight:600;">${j}:</label>
-      <input type="text" id="desa-${j}" value="${strukturDesa[j]||''}" placeholder="Nama pengurus" style="width:100%;padding:8px;font-size:13px;border:1px solid var(--line);border-radius:8px;">
-    </div>`;
-  });
-  html += `<button class="btn" onclick="saveStrukturDesa()" style="width:100%;margin-top:8px;">💾 Simpan Struktur Desa</button>
+
+  if(mode === 'bagan'){
+    renderStrukturBagan(strukturDesa, struktur);
+  } else {
+    renderStrukturEdit(strukturDesa, struktur);
+  }
+}
+
+function renderStrukturBagan(strukturDesa, struktur){
+  let html = `<div class="org-wrap">
+    <div class="org-block-title">🏘️ MUMI Desa Citeureup</div>
+    ${orgTiersHtml(TIER_DESA, strukturDesa)}
   </div>
-  
-  <div id="successStruktKelompok" class="success-msg"></div>
-  <h3 style="color:var(--accent-dark);font-size:14px;margin:16px 0 10px;">👥 Struktur Pengurus MUMI Kelompok (Bisa Diedit)</h3>`;
-  
+  <div class="org-block-title">👥 MUMI Kelompok</div>
+  <div style="display:flex; flex-direction:column; align-items:center;">`;
+
   KELOMPOK_STRUKTUR.forEach(k=>{
     const data = struktur[k] || {};
-    html += `<div style="background:var(--accent-soft);border-radius:10px;padding:12px;margin-bottom:12px;border-left:4px solid var(--accent);">
-      <h3 style="margin:0 0 10px;color:var(--accent-dark);font-size:14px;font-weight:700;">${k}</h3>`;
+    html += `<div class="org-kelompok-group">
+      <h4>${k}</h4>
+      <div class="org-wrap">${orgTiersHtml(TIER_KELOMPOK, data)}</div>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById('strukturContent').innerHTML = html;
+}
+
+function renderStrukturEdit(strukturDesa, struktur){
+  let html = `<div id="successStruktDesa" class="success-msg"></div>
+  <div class="struktur-editcard" style="border-left:4px solid var(--ink-soft);">
+    <h3>🏘️ Struktur Pengurus MUMI Desa</h3>`;
+  JABATAN_DESA.forEach(j=>{
+    html += `<div class="struktur-field">
+      <label>${j}</label>
+      <input type="text" id="desa-${j}" value="${strukturDesa[j]||''}" placeholder="Nama pengurus">
+    </div>`;
+  });
+  html += `<button class="btn" onclick="saveStrukturDesa()" style="width:100%;margin-top:6px;">💾 Simpan Struktur Desa</button>
+  </div>
+
+  <div id="successStruktKelompok" class="success-msg"></div>
+  <h3 style="color:var(--accent-dark);font-size:14px;margin:16px 0 10px;">👥 Struktur Pengurus MUMI Kelompok</h3>`;
+
+  KELOMPOK_STRUKTUR.forEach(k=>{
+    const data = struktur[k] || {};
+    html += `<div class="struktur-editcard" style="border-left:4px solid var(--accent); background:var(--accent-soft);">
+      <h3 style="color:var(--accent-dark);">${k}</h3>`;
     JABATAN_STRUKTUR.forEach(j=>{
-      html += `<div style="margin-bottom:8px;">
-        <label style="font-size:12px;font-weight:600;">${j}:</label>
-        <input type="text" id="struktur-${k}-${j}" value="${data[j]||''}" placeholder="Nama pengurus" style="width:100%;padding:8px;font-size:13px;border:1px solid var(--line);border-radius:8px;">
+      html += `<div class="struktur-field">
+        <label>${j}</label>
+        <input type="text" id="struktur-${k}-${j}" value="${data[j]||''}" placeholder="Nama pengurus">
       </div>`;
     });
     html += `</div>`;
   });
-  html += `<button class="btn" onclick="saveStrukturPengurus()" style="width:100%;margin-top:12px;">💾 Simpan Semua Struktur Kelompok</button>`;
-  
+  html += `<button class="btn" onclick="saveStrukturPengurus()" style="width:100%;margin-top:6px;">💾 Simpan Semua Struktur Kelompok</button>`;
+
   document.getElementById('strukturContent').innerHTML = html;
 }
+
+document.getElementById('strukturModeSwitch').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.seg-btn');
+  if(!btn) return;
+  const wrap = document.getElementById('strukturModeSwitch');
+  wrap.dataset.mode = btn.dataset.mode;
+  wrap.querySelectorAll('.seg-btn').forEach(b=>b.classList.toggle('active', b===btn));
+  renderStrukturTab();
+});
 
 function saveStrukturDesa(){
   const STORE_DESA = 'mumi_struktur_desa_v1';
@@ -1968,14 +2111,17 @@ function saveStrukturDesa(){
     strukturDesa[j] = val;
   });
   localStorage.setItem(STORE_DESA, JSON.stringify(strukturDesa));
-  
+
+  let struktur = {};
+  try{ struktur = JSON.parse(localStorage.getItem('mumi_struktur_v1')) || {}; }catch(e){}
+
+  renderStrukturEdit(strukturDesa, struktur);
   const msg = document.getElementById('successStruktDesa');
-  msg.innerHTML = '✅ Struktur Pengurus MUMI Desa berhasil disimpan!';
-  msg.classList.add('show');
-  setTimeout(()=>msg.classList.remove('show'), 3000);
-  
-  // Re-render supaya langsung terlihat perubahannya
-  renderStrukturTab();
+  if(msg){
+    msg.innerHTML = '✅ Tersimpan! Cek tab 🗂️ Bagan di atas untuk lihat hasilnya.';
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 3500);
+  }
 }
 
 function saveStrukturPengurus(){
@@ -1989,14 +2135,18 @@ function saveStrukturPengurus(){
     });
   });
   localStorage.setItem(STORE_STRUKTUR, JSON.stringify(struktur));
-  
+
+  let strukturDesa = {};
+  try{ strukturDesa = JSON.parse(localStorage.getItem('mumi_struktur_desa_v1')) || {}; }catch(e){}
+  if(Object.keys(strukturDesa).length === 0) strukturDesa = {...PENGURUS_DESA_DEFAULT};
+
+  renderStrukturEdit(strukturDesa, struktur);
   const msg = document.getElementById('successStruktKelompok');
-  msg.innerHTML = '✅ Struktur Pengurus Kelompok berhasil disimpan!';
-  msg.classList.add('show');
-  setTimeout(()=>msg.classList.remove('show'), 3000);
-  
-  // Re-render supaya langsung terlihat perubahannya
-  renderStrukturTab();
+  if(msg){
+    msg.innerHTML = '✅ Tersimpan! Cek tab 🗂️ Bagan di atas untuk lihat hasilnya.';
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'), 3500);
+  }
 }
 
 /* ---------- DASHBOARD ---------- */
