@@ -167,6 +167,21 @@
   .qrcard .kl{font-size:10.5px; color:var(--ink-soft);}
   .qrcard .no{font-size:10px; color:var(--gray); margin-top:2px;}
 
+  .foto-person-row{position:relative;}
+  .person-autocomplete{
+    position:absolute; top:100%; left:0; right:0; z-index:50;
+    background:#fff; border:1px solid var(--line); border-radius:9px;
+    margin-top:4px; max-height:180px; overflow-y:auto;
+    box-shadow:0 4px 12px rgba(31,42,34,0.12); display:none;
+  }
+  .person-autocomplete.show{display:block;}
+  .person-autocomplete .ac-item{
+    padding:8px 12px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--line);
+  }
+  .person-autocomplete .ac-item:last-child{border-bottom:none;}
+  .person-autocomplete .ac-item:hover, .person-autocomplete .ac-item.active{background:var(--accent-soft); color:var(--accent-dark);}
+  .person-autocomplete .ac-item .ac-kl{color:var(--ink-soft); font-size:11px; margin-left:4px;}
+
   .kelompok-title{
     font-size:13px; font-weight:700; color:var(--accent-dark); margin:18px 0 8px;
     padding-bottom:4px; border-bottom:2px solid var(--accent-soft);
@@ -2131,9 +2146,38 @@ function personRowHtml(prefix, idx, person){
       ${foto ? `<img src="${foto}" alt="foto">` : '📷'}
     </div>
     <input type="file" id="${fileId}" accept="image/*" style="display:none">
-    <input type="text" class="person-name" value="${nama}" placeholder="Nama pengurus">
+    <div style="position:relative; flex:1;">
+      <input type="text" class="person-name" value="${nama}" placeholder="Nama pengurus" autocomplete="off">
+      <div class="person-autocomplete"></div>
+    </div>
     <button type="button" class="btn-remove-person" onclick="this.closest('.foto-person-row').remove()">✕</button>
   </div>`;
+}
+
+function bindNameAutocomplete(row){
+  const input = row.querySelector('.person-name');
+  const box = row.querySelector('.person-autocomplete');
+  if(!input || !box) return;
+
+  function renderSuggestions(){
+    const q = input.value.trim().toLowerCase();
+    if(!q){ box.classList.remove('show'); box.innerHTML=''; return; }
+    const matches = ROSTER.filter(p=>p.n.toLowerCase().includes(q)).slice(0,8);
+    if(matches.length===0){ box.classList.remove('show'); box.innerHTML=''; return; }
+    box.innerHTML = matches.map(p=>`<div class="ac-item" data-nama="${p.n.replace(/"/g,'&quot;')}">${p.n}<span class="ac-kl">${p.k}</span></div>`).join('');
+    box.classList.add('show');
+  }
+
+  input.addEventListener('input', renderSuggestions);
+  input.addEventListener('focus', renderSuggestions);
+  input.addEventListener('blur', ()=> setTimeout(()=>box.classList.remove('show'), 150));
+  box.addEventListener('mousedown', (e)=>{
+    const item = e.target.closest('.ac-item');
+    if(!item) return;
+    input.value = item.dataset.nama;
+    box.classList.remove('show');
+    box.innerHTML = '';
+  });
 }
 
 function multiFieldHtml(prefix, jabatan, people){
@@ -2160,6 +2204,7 @@ function addPersonRow(btn){
   const thumb = newRow.querySelector('.foto-thumb');
   const fileInput = newRow.querySelector('input[type=file]');
   bindFotoPicker(thumb, fileInput);
+  bindNameAutocomplete(newRow);
 }
 
 function bindAllFotoPickers(container){
@@ -2167,6 +2212,7 @@ function bindAllFotoPickers(container){
     const thumb = row.querySelector('.foto-thumb');
     const fileInput = row.querySelector('input[type=file]');
     if(thumb && fileInput) bindFotoPicker(thumb, fileInput);
+    bindNameAutocomplete(row);
   });
 }
 
