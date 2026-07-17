@@ -41,7 +41,35 @@
     color:#e4efe8; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer;
   }
   nav button.active{background:#fff; color:var(--accent-dark);}
-  
+
+  /* Nav dropdown groups (desktop) */
+  .navgroup{position:relative;}
+  .navgroup-btn{
+    flex:1; min-width:100px; padding:9px 6px; border:none; background:transparent;
+    color:#e4efe8; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer;
+  }
+  .navgroup-btn.active, .navgroup.open .navgroup-btn{background:#fff; color:var(--accent-dark);}
+  .navgroup-menu{
+    display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:190px;
+    background:#fff; border:1px solid var(--line); border-radius:10px;
+    box-shadow:0 6px 20px rgba(31,42,34,0.15); padding:6px; z-index:60;
+  }
+  .navgroup.open .navgroup-menu{display:block;}
+  .navgroup-menu button{
+    display:block; width:100%; text-align:left; padding:9px 10px; border:none;
+    background:none; color:var(--ink); font-size:13px; font-weight:600;
+    border-radius:7px; cursor:pointer;
+  }
+  .navgroup-menu button:hover{background:var(--accent-soft); color:var(--accent-dark);}
+  .navgroup-menu button.active{background:var(--accent-soft); color:var(--accent-dark);}
+
+  /* Mobile menu section headings */
+  .navlink-heading{
+    padding:12px 16px 4px; color:#9db8a8; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #navMobile button.navlink-sub{padding-left:28px; font-size:14px;}
+
   /* Hamburger menu button */
   .hamburger{
     display:none; background:none; border:none; color:#fff;
@@ -123,6 +151,45 @@
   .stat.izin{background:var(--warn-soft);} .stat.izin .num{color:var(--warn);}
   .stat.sakit{background:#eae6f6;} .stat.sakit .num{color:#5b3fa0;}
   .stat.alpa{background:var(--bad-soft);} .stat.alpa .num{color:var(--bad);}
+
+  /* Panduan bantuan (help box) */
+  .help-box{
+    border:1px solid var(--line); border-radius:12px; background:linear-gradient(180deg,#fbfaf6,#ffffff);
+    margin-bottom:14px; overflow:hidden;
+  }
+  .help-box summary{
+    list-style:none; cursor:pointer; padding:12px 14px; display:flex; align-items:center;
+    gap:8px; font-weight:700; font-size:13.5px; color:var(--accent-dark); user-select:none;
+  }
+  .help-box summary::-webkit-details-marker{display:none;}
+  .help-box summary .chev{margin-left:auto; transition:transform .18s; color:var(--ink-soft); font-size:12px;}
+  .help-box[open] summary .chev{transform:rotate(90deg);}
+  .help-box summary .ic{font-size:16px;}
+  .help-body{padding:2px 16px 16px;}
+  .help-steps{list-style:none; margin:0; padding:0; counter-reset:step;}
+  .help-steps li{
+    counter-increment:step; position:relative; padding:8px 0 8px 34px; font-size:13px;
+    line-height:1.5; color:var(--ink); border-bottom:1px dashed var(--line);
+  }
+  .help-steps li:last-child{border-bottom:none;}
+  .help-steps li::before{
+    content:counter(step); position:absolute; left:0; top:8px; width:22px; height:22px;
+    background:var(--accent-soft); color:var(--accent-dark); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700;
+  }
+  .help-steps b{color:var(--accent-dark);}
+  .help-poin-grid{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:12px;
+  }
+  .help-poin-item{
+    background:var(--gray-soft); border-radius:9px; padding:9px 11px; font-size:12.5px;
+    display:flex; justify-content:space-between; align-items:center; gap:6px;
+  }
+  .help-poin-item .pv{font-weight:700; color:var(--accent-dark); font-size:13.5px;}
+  .help-note{
+    margin-top:12px; padding:10px 12px; background:var(--warn-soft); color:var(--warn);
+    border-radius:9px; font-size:12.5px; line-height:1.5;
+  }
 
   #reader{width:100%; max-width:420px; margin:0 auto; border-radius:12px; overflow:hidden;}
   #scanFeedback{
@@ -390,15 +457,37 @@
   </div>
   <nav class="noprint">
     <button data-tab="scan" class="active">📱 Scan Desa</button>
-    <button data-tab="rekap">📋 Rekap Desa</button>
     <button data-tab="kelompok">👥 Scan Kelompok</button>
-    <button data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
-    <button data-tab="dashboard">📈 Dashboard</button>
+
+    <div class="navgroup">
+      <button class="navgroup-btn" data-group="rekap">📋 Rekap ▾</button>
+      <div class="navgroup-menu">
+        <button data-tab="rekap">📋 Rekap Desa</button>
+        <button data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
+        <button data-tab="rekap-manual">🗂️ Rekap Manual (Jan-Jul)</button>
+        <button data-tab="dashboard">📈 Dashboard</button>
+      </div>
+    </div>
+
     <button data-tab="cetak">🖨️ Cetak Barcode</button>
     <button data-tab="daftar">➕ Daftar Anggota</button>
-    <button data-tab="edit">✏️ Edit Data</button>
-    <button data-tab="struktur">⚙️ Struktur Pengurus</button>
-    <button data-tab="admin">ℹ️ Admin & WhatsApp</button>
+
+    <div class="navgroup">
+      <button class="navgroup-btn" data-group="sanja">🏆 Sanja ▾</button>
+      <div class="navgroup-menu">
+        <div style="padding:6px 10px 4px; font-size:10.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;">Khusus Kelompok Sanja</div>
+        <button data-tab="poin-sanja">🏆 Poin Sanja</button>
+      </div>
+    </div>
+
+    <div class="navgroup">
+      <button class="navgroup-btn" data-group="pengaturan">⚙️ Pengaturan ▾</button>
+      <div class="navgroup-menu">
+        <button data-tab="edit">✏️ Edit Data</button>
+        <button data-tab="struktur">⚙️ Struktur Pengurus</button>
+        <button data-tab="admin">ℹ️ Admin &amp; WhatsApp</button>
+      </div>
+    </div>
   </nav>
 </header>
 
@@ -408,15 +497,24 @@
     <button id="btnMenuClose">✕</button>
   </div>
   <button class="navlink" data-tab="scan">📱 Scan Desa</button>
-  <button class="navlink" data-tab="rekap">📋 Rekap Desa</button>
   <button class="navlink" data-tab="kelompok">👥 Scan Kelompok</button>
-  <button class="navlink" data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
-  <button class="navlink" data-tab="dashboard">📈 Dashboard</button>
+
+  <div class="navlink-heading">📋 Rekap</div>
+  <button class="navlink navlink-sub" data-tab="rekap">📋 Rekap Desa</button>
+  <button class="navlink navlink-sub" data-tab="rekap-kelompok">📊 Rekap Kelompok</button>
+  <button class="navlink navlink-sub" data-tab="rekap-manual">🗂️ Rekap Manual (Jan-Jul)</button>
+  <button class="navlink navlink-sub" data-tab="dashboard">📈 Dashboard</button>
+
   <button class="navlink" data-tab="cetak">🖨️ Cetak Barcode</button>
   <button class="navlink" data-tab="daftar">➕ Daftar Anggota</button>
-  <button class="navlink" data-tab="edit">✏️ Edit Data</button>
-  <button class="navlink" data-tab="struktur">⚙️ Struktur Pengurus</button>
-  <button class="navlink" data-tab="admin">ℹ️ Admin & WhatsApp</button>
+
+  <div class="navlink-heading">🏆 Khusus Kelompok Sanja</div>
+  <button class="navlink navlink-sub" data-tab="poin-sanja">🏆 Poin Sanja</button>
+
+  <div class="navlink-heading">⚙️ Pengaturan</div>
+  <button class="navlink navlink-sub" data-tab="edit">✏️ Edit Data</button>
+  <button class="navlink navlink-sub" data-tab="struktur">⚙️ Struktur Pengurus</button>
+  <button class="navlink navlink-sub" data-tab="admin">ℹ️ Admin &amp; WhatsApp</button>
 </div>
 
 <main>
@@ -445,6 +543,17 @@
       <input type="date" id="sesiTanggal">
       <input type="text" id="sesiNama" placeholder="Nama kegiatan (opsional), contoh: Pengajian Rutin">
     </div>
+    <div class="row" style="margin-top:8px;">
+      <div style="flex:1; min-width:140px;">
+        <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">🕗 Jam mulai (tepat waktu s/d)</label>
+        <input type="time" id="sesiJamMulai">
+      </div>
+      <div style="flex:1; min-width:140px;">
+        <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">⚠️ Batas telat (opsional, lewat ini = tanpa izin)</label>
+        <input type="time" id="sesiJamBatasTelat">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:6px;">Isi jam mulai sekali di awal. Setelah itu, tiap kali scan barcode atau input manual, jam hadir, kategori (Tepat Waktu/Telat), dan poinnya otomatis muncul sendiri — tidak perlu dihitung manual lagi.</div>
     <div class="row" style="margin-top:8px;">
       <div style="flex:1; min-width:140px;">
         <label style="font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;">⏰ Tutup otomatis jam (opsional)</label>
@@ -793,6 +902,128 @@
   </div>
 </section>
 
+<!-- TAB REKAP MANUAL JAN-JUL -->
+<section id="tab-rekap-manual" style="display:none">
+  <div class="card">
+    <h2>🗂️ Rekap Manual Absensi (Januari - Juli)</h2>
+    <p class="sub">Untuk bulan-bulan yang datanya belum ada nama satu-satu (baru ada jumlah peserta & jumlah hadir), input rekap per kelompok di sini. Data ini tersimpan terpisah dan bisa diekspor kapan saja.</p>
+    <div class="row">
+      <select id="rmBulan">
+        <option value="2026-01">Januari 2026</option>
+        <option value="2026-02">Februari 2026</option>
+        <option value="2026-03">Maret 2026</option>
+        <option value="2026-04">April 2026</option>
+        <option value="2026-05">Mei 2026</option>
+        <option value="2026-06">Juni 2026</option>
+        <option value="2026-07">Juli 2026</option>
+      </select>
+      <select id="rmKelompok">
+        <option value="Al Muhajirin">Al Muhajirin</option>
+        <option value="Bojong Koneng">Bojong Koneng</option>
+        <option value="Kamurang">Kamurang</option>
+        <option value="Sanja">Sanja</option>
+        <option value="Sentul">Sentul</option>
+        <option value="Tarikolot">Tarikolot</option>
+      </select>
+    </div>
+    <div class="row" style="margin-top:8px; gap:14px;">
+      <div style="flex:1;">
+        <label style="font-size:12px;color:var(--ink-soft);">Jumlah Peserta (total anggota saat itu)</label>
+        <input type="number" id="rmJumlahPeserta" min="0" placeholder="cth: 20">
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:12px;color:var(--ink-soft);">Jumlah Hadir</label>
+        <input type="number" id="rmJumlahHadir" min="0" placeholder="cth: 15">
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn" id="btnSimpanRekapManual">💾 Simpan rekap bulan ini</button>
+    </div>
+    <p class="sub" style="margin-top:10px;">Kalau sudah tahu nama-nama yang hadir untuk bulan ini, isi juga di bawah (opsional) — ketik nama dipisah baris baru (enter), satu nama per baris.</p>
+    <textarea id="rmNamaHadir" rows="5" style="width:100%; font-family:inherit; font-size:13px; padding:8px; border-radius:8px; border:1px solid var(--line);" placeholder="Nama 1&#10;Nama 2&#10;Nama 3"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>Rekap tersimpan</h2>
+    <div class="row noprint">
+      <button class="btn ghost" id="btnExportRekapManualXlsx">📥 Export Excel</button>
+      <button class="btn ghost" id="btnExportRekapManualPdf">📄 Export PDF</button>
+    </div>
+    <div style="overflow-x:auto; margin-top:10px;">
+      <table id="tabelRekapManual"></table>
+    </div>
+  </div>
+</section>
+
+<!-- TAB POIN SANJA -->
+<section id="tab-poin-sanja" style="display:none">
+
+  <details class="help-box noprint" id="psHelpBox">
+    <summary><span class="ic">❓</span> Cara Menggunakan Sistem Poin <span class="chev">▶</span></summary>
+    <div class="help-body">
+      <ol class="help-steps">
+        <li><b>Buat / pilih sesi</b> — pilih tanggal, lalu tekan "+ Sesi minggu ini". Kalau sesi minggu itu sudah ada, tinggal pilih dari daftar sesi.</li>
+        <li><b>Isi jam sekali saja</b> — atur "Jam mulai" (batas Tepat Waktu) dan "Batas telat" (lewat ini = Tanpa Izin). Cukup sekali per sesi, bukan per orang.</li>
+        <li><b>Isi kehadiran</b> — tekan "Ambil jam hadir dari tab Scan" supaya jam hadir yang sudah tercatat (barcode/manual) otomatis masuk. Bisa juga isi jam manual satu-satu.</li>
+        <li><b>Status & poin otomatis</b> — begitu jam hadir terisi, status (Tepat Waktu / Telat / dst) dan poinnya langsung muncul sendiri, tidak perlu dihitung manual.</li>
+        <li><b>Telat tapi sudah izin?</b> — centang kotak "Izin" di samping namanya, supaya poinnya jadi Telat (Izin) bukan Telat (Tanpa Izin).</li>
+        <li><b>Lihat rekap & ranking</b> — di kartu bawah, pilih bulan untuk melihat ranking bulanan, lalu export ke Excel atau PDF kalau perlu.</li>
+      </ol>
+      <div class="help-poin-grid">
+        <div class="help-poin-item"><span>✅ Tepat Waktu</span><span class="pv">10 poin</span></div>
+        <div class="help-poin-item"><span>🕗 Telat (Izin)</span><span class="pv">3 poin</span></div>
+        <div class="help-poin-item"><span>⏰ Telat (Tanpa Izin)</span><span class="pv">2 poin</span></div>
+        <div class="help-poin-item"><span>📩 Izin Tidak Hadir</span><span class="pv">1 poin</span></div>
+        <div class="help-poin-item"><span>❌ Tidak Hadir</span><span class="pv">0 poin</span></div>
+      </div>
+      <div class="help-note">
+        🏆 Ranking 5 teratas dapat hadiah &middot; 5 terbawah dapat evaluasi/kafaroh (amal soleh, doa penutup, atau menambal materi) &middot; Ranking 1–3 dengan kehadiran penuh dapat reward makan-makan.
+      </div>
+    </div>
+  </details>
+
+  <div class="card">
+    <h2>🏆 Sistem Poin Kelompok Sanja</h2>
+    <p class="sub">Catat kehadiran, jam otomatis dihitung jadi status & poin. Buka panduan di atas kalau masih bingung.</p>
+    <div class="row">
+      <input type="date" id="psTanggal">
+      <button class="btn ghost" id="btnPsSesiBaru">+ Sesi minggu ini</button>
+    </div>
+    <div class="row noprint" style="margin-top:8px;">
+      <select id="psSesiSelect"></select>
+    </div>
+    <div class="row noprint" style="margin-top:10px;">
+      <div style="flex:1;min-width:140px;">
+        <label style="font-size:12px;color:var(--ink-soft);">🕖 Jam mulai (tepat waktu s/d)</label>
+        <input type="time" id="psJamMulai">
+      </div>
+      <div style="flex:1;min-width:140px;">
+        <label style="font-size:12px;color:var(--ink-soft);">🕗 Batas telat (lewat ini = tanpa izin)</label>
+        <input type="time" id="psJamBatasTelat">
+      </div>
+    </div>
+    <p class="sub" style="margin-top:6px;">Isi jam sesi ini sekali saja. Setelah itu, tinggal masukkan jam hadir tiap orang (dari scan barcode atau ketik manual) — status &amp; poin langsung otomatis muncul. Kalau ada yang telat tapi sudah izin duluan, centang "Izin" supaya poinnya jadi Telat (Izin).</p>
+    <button class="btn noprint" id="btnPsAmbilScan" style="width:100%;margin-top:6px;">📥 Ambil jam hadir dari tab Scan (barcode + manual)</button>
+    <div class="hint noprint" style="margin-top:6px;">Kalau anggota Sanja sudah absen di tab <b>Scan Absensi</b> (baik scan barcode maupun input manual), klik tombol di atas untuk otomatis mengisi jam hadir mereka di sini — tidak perlu ketik ulang.</div>
+    <div id="psInputList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Rekap Poin Bulanan & Ranking</h2>
+    <div class="row">
+      <select id="psBulan"></select>
+    </div>
+    <div class="row noprint" style="margin-top:8px;">
+      <button class="btn ghost" id="btnExportPoinXlsx">📥 Export Excel</button>
+      <button class="btn ghost" id="btnExportPoinPdf">📄 Export PDF</button>
+    </div>
+    <div id="psRankingContent" style="margin-top:12px;"></div>
+    <div style="overflow-x:auto; margin-top:10px;">
+      <table id="tabelPoinSanja"></table>
+    </div>
+  </div>
+</section>
+
 <!-- TAB STRUKTUR PENGURUS -->
 <section id="tab-struktur" style="display:none">
   <div class="card">
@@ -949,6 +1180,11 @@
     <h3 style="color:var(--accent-dark);font-size:14px;margin-top:24px;">📊 Perbandingan Antar Kelompok (Bulan Ini)</h3>
     <canvas id="chartKelCompare" height="140"></canvas>
 
+    <h3 style="color:var(--accent-dark);font-size:14px;margin-top:24px;">🏘️ Persentase Kehadiran Tiap Kelompok di Pengajian Desa (Bulan ke Bulan)</h3>
+    <p class="sub" style="margin-top:-4px;">Jumlah hadir dari kelompok tsb di pengajian desa ÷ total anggota kelompok tsb, per bulan.</p>
+    <canvas id="chartKelDiDesaTrend" height="140"></canvas>
+    <div id="tabelKelDiDesaWrap" style="margin-top:14px;"></div>
+
     <div id="dashboardTableWrap" style="margin-top:20px;"></div>
   </div>
 </section>
@@ -1034,6 +1270,34 @@ function syncPullAllFromSheet(){
         localStorage.setItem('mumi_struktur_v1', JSON.stringify(res.strukturKelompok));
       }
 
+      // ---- Gabungkan absensi Desa dari Sheet ke DB.sessions ----
+      // Sheet adalah sumber kebenaran, jadi baris dari Sheet menimpa baris lokal yang sama (tanggal+personId)
+      if(Array.isArray(res.absensiDesa)){
+        if(!DB.sessions) DB.sessions = {};
+        res.absensiDesa.forEach(row=>{
+          const tgl = String(row.Tanggal||'').trim();
+          const pid = row.PersonId;
+          if(!tgl || pid===undefined || pid==='') return;
+          if(!DB.sessions[tgl]) DB.sessions[tgl] = { nama:'', closed:false, records:{} };
+          DB.sessions[tgl].records[pid] = { status: row.Status||'Alpa', time: row.Jam||'' };
+        });
+      }
+
+      // ---- Gabungkan absensi Kelompok dari Sheet ke DB.kelompokSessions ----
+      if(Array.isArray(res.absensiKelompok)){
+        if(!DB.kelompokSessions) DB.kelompokSessions = {};
+        res.absensiKelompok.forEach(row=>{
+          const tgl = String(row.Tanggal||'').trim();
+          const kel = row.Kelompok;
+          const pid = row.PersonId;
+          if(!tgl || !kel || pid===undefined || pid==='') return;
+          const key = kel + '_' + tgl;
+          if(!DB.kelompokSessions[key]) DB.kelompokSessions[key] = { kelompok:kel, tanggal:tgl, nama:'', closed:false, records:{} };
+          DB.kelompokSessions[key].records[pid] = { status: row.Status||'Alpa', time: row.Jam||'' };
+        });
+      }
+      saveDB();
+
       // Render ulang tab yang sedang dibuka biar user langsung lihat data terbaru
       if(typeof refreshCurrentTabAfterSync === 'function') refreshCurrentTabAfterSync();
     })
@@ -1047,6 +1311,7 @@ function refreshCurrentTabAfterSync(){
   if(id==='tab-struktur' && typeof renderStrukturTab==='function') renderStrukturTab();
   if(id==='tab-rekap' && typeof renderRekapTab==='function') renderRekapTab();
   if(id==='tab-rekap-kelompok' && typeof renderRekapKelompokBulanan==='function') renderRekapKelompokBulanan();
+  if(id==='tab-dashboard' && typeof initDashboardTab==='function') initDashboardTab();
 }
 
 
@@ -1057,6 +1322,76 @@ function todayStr(){
 function nowTime(){
   const d = new Date();
   return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
+/* ---------- JAM 24 JAM (00.00-23.59), TANPA AM/PM ---------- */
+// Beberapa browser/HP menampilkan <input type="time"> dalam format 12 jam (AM/PM)
+// tergantung pengaturan bahasa/wilayah HP-nya, walau nilai yang disimpan tetap "HH:MM".
+// Supaya SEMUA pengurus lihat format yang sama (24 jam, 00.00-23.59) apa pun HP-nya,
+// setiap <input type="time"> di halaman ini diganti tampilannya jadi 2 pilihan: Jam (00-23) & Menit (00-59).
+// Input aslinya tetap ada (disembunyikan) dan otomatis ke-update, jadi semua kode lain yang
+// baca/tulis lewat .value / addEventListener('change') tetap jalan seperti biasa.
+function jadikanJam24(input){
+  if(!input || input.dataset.jam24Ready) return;
+  input.dataset.jam24Ready = '1';
+  input.type = 'hidden'; // sembunyikan input time asli, tapi tetap dipakai kode lain
+
+  const wrap = document.createElement('span');
+  wrap.style.cssText = 'display:inline-flex;gap:4px;align-items:center;flex:1;min-width:110px;';
+
+  const selJam = document.createElement('select');
+  selJam.style.cssText = 'flex:1;padding:10px 6px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff;color:var(--ink);';
+  selJam.innerHTML = '<option value="">--</option>' + Array.from({length:24},(_,i)=>{
+    const v = String(i).padStart(2,'0');
+    return `<option value="${v}">${v}</option>`;
+  }).join('');
+
+  const pemisah = document.createElement('span');
+  pemisah.textContent = '.';
+  pemisah.style.cssText = 'font-weight:700;color:var(--ink-soft);';
+
+  const selMenit = document.createElement('select');
+  selMenit.style.cssText = 'flex:1;padding:10px 6px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff;color:var(--ink);';
+  selMenit.innerHTML = '<option value="">--</option>' + Array.from({length:60},(_,i)=>{
+    const v = String(i).padStart(2,'0');
+    return `<option value="${v}">${v}</option>`;
+  }).join('');
+
+  function syncDariInput(){
+    const val = input.value || '';
+    const [h,m] = val.split(':');
+    selJam.value = h || '';
+    selMenit.value = m || '';
+  }
+  function syncKeInput(){
+    const h = selJam.value, m = selMenit.value;
+    const val = (h && m) ? (h+':'+m) : '';
+    nativeSetter.call(input, val);
+    input.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+  selJam.addEventListener('change', syncKeInput);
+  selMenit.addEventListener('change', syncKeInput);
+
+  // Timpa property "value" bawaan <input> dengan versi yang juga otomatis
+  // menyegarkan tampilan dropdown Jam/Menit, karena kode lain di app ini
+  // sering mengisi jam lewat "input.value = ..." (bukan lewat attribute),
+  // dan itu tidak terdeteksi oleh MutationObserver biasa.
+  const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  const nativeGetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get;
+  Object.defineProperty(input, 'value', {
+    get(){ return nativeGetter.call(input); },
+    set(v){ nativeSetter.call(input, v); syncDariInput(); },
+    configurable:true
+  });
+  syncDariInput();
+
+  wrap.appendChild(selJam);
+  wrap.appendChild(pemisah);
+  wrap.appendChild(selMenit);
+  input.insertAdjacentElement('afterend', wrap);
+}
+function jadikanSemuaJam24(root){
+  (root||document).querySelectorAll('input[type="time"]').forEach(jadikanJam24);
 }
 function loadDB(){
   try{
@@ -1122,22 +1457,45 @@ document.getElementById('btnMenuClose').addEventListener('click', ()=>{
   document.getElementById('navMobile').classList.remove('open');
 });
 
-// Nav buttons (desktop + mobile)
-document.querySelectorAll('nav button, #navMobile button.navlink').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    // Update active state di kedua nav
-    document.querySelectorAll('nav button, #navMobile button.navlink').forEach(b=>b.classList.remove('active'));
+// Dropdown navgroup toggle (desktop)
+document.querySelectorAll('.navgroup-btn').forEach(gbtn=>{
+  gbtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const grp = gbtn.closest('.navgroup');
+    const wasOpen = grp.classList.contains('open');
+    document.querySelectorAll('.navgroup').forEach(g=>g.classList.remove('open'));
+    if(!wasOpen) grp.classList.add('open');
+  });
+});
+document.addEventListener('click', ()=>{
+  document.querySelectorAll('.navgroup').forEach(g=>g.classList.remove('open'));
+});
+
+// Nav buttons (desktop nav + dropdown menus + mobile)
+document.querySelectorAll('nav button[data-tab], .navgroup-menu button[data-tab], #navMobile button.navlink[data-tab]').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    // Update active state di semua nav (termasuk dalam dropdown)
+    document.querySelectorAll('nav button[data-tab], .navgroup-menu button[data-tab], #navMobile button.navlink[data-tab]').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.navgroup-btn').forEach(b=>b.classList.remove('active'));
     // Set active di button yang di-klik dan pasangannya di nav yang lain
-    document.querySelectorAll(`nav button[data-tab="${btn.dataset.tab}"], #navMobile button.navlink[data-tab="${btn.dataset.tab}"]`).forEach(b=>b.classList.add('active'));
-    
+    document.querySelectorAll(`[data-tab="${btn.dataset.tab}"]`).forEach(b=>b.classList.add('active'));
+    // Kalau tombol ada di dalam dropdown, tandai juga tombol grup pembukanya sebagai active
+    const parentGroup = btn.closest('.navgroup');
+    if(parentGroup){
+      const gbtn = parentGroup.querySelector('.navgroup-btn');
+      if(gbtn) gbtn.classList.add('active');
+    }
+
     // Toggle tab content
-    ['cetak','scan','rekap','daftar','edit','pengurus','kelompok','struktur','admin','rekap-kelompok','dashboard'].forEach(t=>{
+    ['cetak','scan','rekap','daftar','edit','pengurus','kelompok','struktur','admin','rekap-kelompok','dashboard','rekap-manual','poin-sanja'].forEach(t=>{
       const el = document.getElementById('tab-'+t);
       if(el) el.style.display = (t===btn.dataset.tab)?'block':'none';
     });
     
-    // Close mobile menu setelah pilih
+    // Close mobile menu & dropdown setelah pilih
     document.getElementById('navMobile').classList.remove('open');
+    document.querySelectorAll('.navgroup').forEach(g=>g.classList.remove('open'));
     
     // Render tab content
     if(btn.dataset.tab==='scan') renderScanTab();
@@ -1149,7 +1507,9 @@ document.querySelectorAll('nav button, #navMobile button.navlink').forEach(btn=>
     if(btn.dataset.tab==='struktur') renderStrukturTab();
     if(btn.dataset.tab==='admin') initAdminTab();
     if(btn.dataset.tab==='rekap-kelompok') initRekapKelompokTab();
-    if(btn.dataset.tab==='dashboard') initDashboardTab();
+    if(btn.dataset.tab==='dashboard'){ initDashboardTab(); syncPullAllFromSheet(); }
+    if(btn.dataset.tab==='rekap-manual') initRekapManualTab();
+    if(btn.dataset.tab==='poin-sanja') initPoinSanjaTab();
   });
 });
 
@@ -1557,6 +1917,24 @@ function initScan(){
     saveDB();
     syncSesiConfig();
   });
+  document.getElementById('sesiJamMulai').addEventListener('change', (e)=>{
+    const s = ensureSession(currentSessionKey);
+    s.jamMulai = e.target.value;
+    saveDB();
+    syncSesiConfig();
+    hitungUlangSemuaStatusSesi(s);
+    renderScanStats();
+    renderManualList();
+  });
+  document.getElementById('sesiJamBatasTelat').addEventListener('change', (e)=>{
+    const s = ensureSession(currentSessionKey);
+    s.jamBatasTelat = e.target.value;
+    saveDB();
+    syncSesiConfig();
+    hitungUlangSemuaStatusSesi(s);
+    renderScanStats();
+    renderManualList();
+  });
   document.getElementById('sesiAutoTutupJam').addEventListener('change', (e)=>{
     const s = ensureSession(currentSessionKey);
     s.autoTutupJam = e.target.value;
@@ -1569,10 +1947,32 @@ function initScan(){
   document.getElementById('searchManual').addEventListener('input', renderManualList);
 }
 
+// Hitung ulang kategori (Tepat Waktu/Telat) semua orang yang sudah tercatat Hadir di sesi ini,
+// dipanggil setiap kali jam mulai / batas telat sesi diubah.
+function hitungUlangSemuaStatusSesi(s){
+  Object.keys(s.records).forEach(pid=>{
+    const rec = s.records[pid];
+    if(rec.status === 'Hadir' || rec.kategori){
+      rec.kategori = tentukanKategoriKehadiran(rec.time, s.jamMulai, s.jamBatasTelat);
+    }
+  });
+  saveDB();
+}
+
+// Bandingkan jam hadir terhadap jam mulai (& batas telat opsional) -> "Tepat Waktu" atau "Telat".
+// String "HH:MM" 24 jam bisa dibandingkan langsung selama formatnya konsisten (00-23).
+function tentukanKategoriKehadiran(jamHadir, jamMulai, jamBatasTelat){
+  if(!jamHadir || !jamMulai) return '';
+  if(jamHadir <= jamMulai) return 'Tepat Waktu';
+  return 'Telat';
+}
+
 function renderScanTab(){
   currentSessionKey = document.getElementById('sesiTanggal').value || todayStr();
   const s = ensureSession(currentSessionKey);
   document.getElementById('sesiNama').value = s.nama || '';
+  document.getElementById('sesiJamMulai').value = s.jamMulai || '';
+  document.getElementById('sesiJamBatasTelat').value = s.jamBatasTelat || '';
   document.getElementById('sesiAutoTutupJam').value = s.autoTutupJam || '';
   renderScanStats();
   renderManualList();
@@ -1609,6 +2009,8 @@ function syncSesiConfig(){
       sesiKey: currentSessionKey,
       namaKegiatan: s.nama||'',
       autoTutupJam: s.autoTutupJam||'',
+      jamMulai: s.jamMulai||'',
+      jamBatasTelat: s.jamBatasTelat||'',
       closed: !!s.closed
     })
   }).catch(err=>console.error('Gagal sync config sesi:', err));
@@ -1651,10 +2053,19 @@ function syncSesiConfigFor(sesiKey, session){
 function renderScanStats(){
   const s = ensureSession(currentSessionKey);
   const counts = {Hadir:0, Izin:0, Sakit:0};
-  Object.values(s.records).forEach(r=>{ if(counts[r.status]!==undefined) counts[r.status]++; });
+  let telat = 0, tepat = 0;
+  Object.values(s.records).forEach(r=>{
+    if(counts[r.status]!==undefined) counts[r.status]++;
+    if(r.status==='Hadir'){
+      if(r.kategori==='Telat') telat++;
+      else if(r.kategori==='Tepat Waktu') tepat++;
+    }
+  });
   const belum = ROSTER.length - Object.keys(s.records).length;
   document.getElementById('scanStats').innerHTML = `
     <div class="stat hadir"><div class="num">${counts.Hadir}</div><div class="lbl">Hadir</div></div>
+    <div class="stat hadir"><div class="num">${tepat}</div><div class="lbl">🟢 Tepat Waktu</div></div>
+    <div class="stat izin"><div class="num">${telat}</div><div class="lbl">🟠 Telat</div></div>
     <div class="stat izin"><div class="num">${counts.Izin}</div><div class="lbl">Izin</div></div>
     <div class="stat sakit"><div class="num">${counts.Sakit}</div><div class="lbl">Sakit</div></div>
     <div class="stat"><div class="num">${belum}</div><div class="lbl">Belum absen</div></div>`;
@@ -1684,11 +2095,13 @@ function markAttendance(personId, status){
   if(s.closed){ feedback(false, 'Sesi ini sudah ditutup, tidak bisa diubah.'); return false; }
   const p = ROSTER.find(x=>x.i===personId);
   if(!p) return false;
-  s.records[personId] = { status: status, time: nowTime() };
+  const jam = nowTime();
+  const kategori = (status==='Hadir') ? tentukanKategoriKehadiran(jam, s.jamMulai, s.jamBatasTelat) : '';
+  s.records[personId] = { status: status, time: jam, kategori: kategori };
   saveDB();
   renderScanStats();
   renderManualList();
-  syncToGoogleSheets(personId, p.n, p.k, status, nowTime(), currentSessionKey); // Auto-sync ke Google Sheets
+  syncToGoogleSheets(personId, p.n, p.k, status, jam, currentSessionKey); // Auto-sync ke Google Sheets
   return p;
 }
 
@@ -1760,11 +2173,16 @@ function onScanSuccess(decodedText){
 
   }
 
+  const sAfter = ensureSession(currentSessionKey);
+  const kategori = sAfter.records[id] ? sAfter.records[id].kategori : '';
+  const labelKategori = kategori ? (kategori==='Tepat Waktu' ? '🟢 Tepat Waktu' : '🟠 Telat') : '';
+
   feedback(
       true,
       "<div class='nm'>"+p.n+
       "</div>"+p.k+
-      "<br>✅ Hadir<br>Jam : "+
+      "<br>✅ Hadir"+(labelKategori? ' &middot; '+labelKategori : '')+
+      "<br>Jam : "+
       nowTime()
   );
 
@@ -1782,7 +2200,13 @@ function renderManualList(){
   people = people.slice(0, 40);
   list.innerHTML = people.map(p=>{
     const r = s.records[p.i];
-    const badge = r? `<span class="badge ${r.status.toLowerCase()}">${r.status} ${r.time}</span>` : `<span class="badge belum">Belum</span>`;
+    let badge;
+    if(r){
+      const kategoriTxt = r.kategori ? (' · '+(r.kategori==='Tepat Waktu'?'🟢 Tepat Waktu':'🟠 Telat')) : '';
+      badge = `<span class="badge ${r.status.toLowerCase()}">${r.status} ${r.time}${kategoriTxt}</span>`;
+    } else {
+      badge = `<span class="badge belum">Belum</span>`;
+    }
     return `<div class="prow">
       <div><div class="nm">${p.n}</div><div class="kl">${p.k}</div></div>
       <div style="display:flex; align-items:center; gap:8px;">
@@ -1798,7 +2222,11 @@ function renderManualList(){
 }
 function manualMark(id, status){
   const p = markAttendance(id, status);
-  if(p) feedback(true, `<div class="nm">${p.n}</div>${p.k} &middot; ${status} (manual) jam ${nowTime()}`);
+  if(!p) return;
+  const s = ensureSession(currentSessionKey);
+  const rec = s.records[id];
+  const kategoriTxt = rec && rec.kategori ? (' · '+(rec.kategori==='Tepat Waktu'?'🟢 Tepat Waktu':'🟠 Telat')) : '';
+  feedback(true, `<div class="nm">${p.n}</div>${p.k} &middot; ${status} (manual) jam ${nowTime()}${kategoriTxt}`);
 }
 
 /* ---------- TAB REKAP ---------- */
@@ -2343,6 +2771,319 @@ function exportCsvKelompok(){
   URL.revokeObjectURL(url);
 }
 
+/* ---------- REKAP MANUAL JAN-JUL ---------- */
+// DB.rekapManual = { "2026-01_Sanja": {bulan,kelompok,jumlahPeserta,jumlahHadir,namaHadir:[...]} }
+function initRekapManualTab(){
+  if(!DB.rekapManual) DB.rekapManual = {};
+  document.getElementById('btnSimpanRekapManual').onclick = simpanRekapManual;
+  document.getElementById('btnExportRekapManualXlsx').onclick = exportRekapManualXlsx;
+  document.getElementById('btnExportRekapManualPdf').onclick = ()=>window.print();
+  document.getElementById('rmBulan').addEventListener('change', muatFormRekapManual);
+  document.getElementById('rmKelompok').addEventListener('change', muatFormRekapManual);
+  muatFormRekapManual();
+  renderTabelRekapManual();
+}
+function rmKey(bulan, kelompok){ return bulan+'_'+kelompok; }
+function muatFormRekapManual(){
+  const bulan = document.getElementById('rmBulan').value;
+  const kelompok = document.getElementById('rmKelompok').value;
+  const rec = DB.rekapManual[rmKey(bulan,kelompok)];
+  document.getElementById('rmJumlahPeserta').value = rec ? rec.jumlahPeserta : '';
+  document.getElementById('rmJumlahHadir').value = rec ? rec.jumlahHadir : '';
+  document.getElementById('rmNamaHadir').value = rec && rec.namaHadir ? rec.namaHadir.join('\n') : '';
+}
+function simpanRekapManual(){
+  const bulan = document.getElementById('rmBulan').value;
+  const kelompok = document.getElementById('rmKelompok').value;
+  const jumlahPeserta = parseInt(document.getElementById('rmJumlahPeserta').value)||0;
+  const jumlahHadir = parseInt(document.getElementById('rmJumlahHadir').value)||0;
+  const namaHadirRaw = document.getElementById('rmNamaHadir').value.trim();
+  const namaHadir = namaHadirRaw ? namaHadirRaw.split('\n').map(s=>s.trim()).filter(Boolean) : [];
+  DB.rekapManual[rmKey(bulan,kelompok)] = { bulan, kelompok, jumlahPeserta, jumlahHadir, namaHadir };
+  saveDB();
+  renderTabelRekapManual();
+  showToast(true, '✓ Rekap '+formatBulanLabel(bulan)+' - '+kelompok+' tersimpan');
+}
+function getRekapManualRows(){
+  return Object.values(DB.rekapManual||{}).sort((a,b)=> a.bulan.localeCompare(b.bulan) || a.kelompok.localeCompare(b.kelompok));
+}
+function renderTabelRekapManual(){
+  const rows = getRekapManualRows();
+  const tbl = document.getElementById('tabelRekapManual');
+  if(!tbl) return;
+  tbl.innerHTML = `<tr><th>Bulan</th><th>Kelompok</th><th>Jumlah Peserta</th><th>Jumlah Hadir</th><th>% Hadir</th><th>Nama Tercatat</th></tr>
+    ${rows.map(r=>{
+      const pct = r.jumlahPeserta>0 ? Math.round((r.jumlahHadir/r.jumlahPeserta)*1000)/10 : 0;
+      return `<tr>
+        <td>${formatBulanLabel(r.bulan)}</td><td>${r.kelompok}</td>
+        <td>${r.jumlahPeserta}</td><td>${r.jumlahHadir}</td><td>${pct}%</td>
+        <td>${r.namaHadir && r.namaHadir.length ? r.namaHadir.join(', ') : '<span style="color:var(--gray)">belum diisi</span>'}</td>
+      </tr>`;
+    }).join('')}`;
+}
+function exportRekapManualXlsx(){
+  const rows = getRekapManualRows();
+  const data = rows.map(r=>{
+    const pct = r.jumlahPeserta>0 ? Math.round((r.jumlahHadir/r.jumlahPeserta)*1000)/10 : 0;
+    return {
+      Bulan: formatBulanLabel(r.bulan),
+      Kelompok: r.kelompok,
+      'Jumlah Peserta': r.jumlahPeserta,
+      'Jumlah Hadir': r.jumlahHadir,
+      '% Hadir': pct,
+      'Nama Tercatat': r.namaHadir ? r.namaHadir.join(', ') : ''
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Rekap Manual');
+  XLSX.writeFile(wb, 'rekap-manual-jan-jul.xlsx');
+}
+
+/* ---------- POIN SANJA ---------- */
+// DB.sanjaSesi = { "2026-07-10": { tanggal, jamMulai, jamBatasTelat, records: { personId: {status, jam, izin, keterangan} } } }
+const SANJA_POIN = { 'Tepat Waktu':10, 'Telat (Izin)':3, 'Telat (Tanpa Izin)':2, 'Tidak Hadir':0, 'Izin Tidak Hadir':1 };
+const SANJA_STATUS_LIST = Object.keys(SANJA_POIN);
+
+// Bandingkan jam hadir terhadap jam mulai & batas telat sesi -> tentukan status otomatis.
+// Kalau jam mulai/batas telat sesi belum diisi, kembalikan null (pengurus harus pilih manual).
+function hitungStatusOtomatis(jamHadir, jamMulai, jamBatasTelat, izinManual){
+  if(!jamHadir) return izinManual ? 'Izin Tidak Hadir' : '';
+  if(!jamMulai) return ''; // jam sesi belum diset, tidak bisa auto
+  // Perbandingan string "HH:MM" 24 jam (00-23) aman dibandingkan langsung selama formatnya konsisten
+  if(jamHadir <= jamMulai) return 'Tepat Waktu';
+  // Sudah lewat jam mulai = telat. Status telat (izin/tanpa izin) ditentukan oleh centang "izin".
+  return izinManual ? 'Telat (Izin)' : 'Telat (Tanpa Izin)';
+}
+
+function initPoinSanjaTab(){
+  if(!DB.sanjaSesi) DB.sanjaSesi = {};
+  document.getElementById('psTanggal').value = todayStr();
+  document.getElementById('btnPsSesiBaru').onclick = buatSesiSanjaBaru;
+  document.getElementById('psSesiSelect').addEventListener('change', ()=>{ syncJamInputsFromSesi(); renderPsInputList(); });
+  document.getElementById('psJamMulai').addEventListener('change', simpanJamSesiDanRefresh);
+  document.getElementById('psJamBatasTelat').addEventListener('change', simpanJamSesiDanRefresh);
+  document.getElementById('btnExportPoinXlsx').onclick = exportPoinSanjaXlsx;
+  document.getElementById('btnExportPoinPdf').onclick = ()=>window.print();
+  if(document.getElementById('btnPsAmbilScan')) document.getElementById('btnPsAmbilScan').onclick = ambilDariScanKeSanja;
+  populatePsSesiSelect();
+  populatePsBulanSelect();
+  document.getElementById('psBulan').addEventListener('change', renderRankingSanja);
+  syncJamInputsFromSesi();
+  renderPsInputList();
+  renderRankingSanja();
+}
+
+// Ambil jam hadir dari tab Scan (baik hasil scan barcode maupun input manual di tab Scan)
+// untuk tanggal sesi Sanja yang lagi dibuka, lalu otomatis isi jam & hitung status/poinnya.
+// Jadi pengurus tidak perlu ketik ulang jam di 2 tempat berbeda.
+function ambilDariScanKeSanja(){
+  const tgl = document.getElementById('psSesiSelect').value;
+  if(!tgl || !DB.sanjaSesi[tgl]){ showToast(false, 'Pilih atau buat sesi tanggal ini dulu.'); return; }
+  const sesiScan = DB.sessions ? DB.sessions[tgl] : null;
+  if(!sesiScan || !Object.keys(sesiScan.records||{}).length){ showToast(false, 'Belum ada data absensi di tab Scan untuk tanggal ini.'); return; }
+
+  const sesi = DB.sanjaSesi[tgl];
+  // Kalau sesi Sanja belum punya jam mulai, ikutkan dari sesi Scan (kalau ada) supaya langsung bisa auto-hitung
+  if(!sesi.jamMulai && sesiScan.jamMulai) sesi.jamMulai = sesiScan.jamMulai;
+  if(!sesi.jamBatasTelat && sesiScan.jamBatasTelat) sesi.jamBatasTelat = sesiScan.jamBatasTelat;
+
+  const anggotaSanja = new Set(ROSTER.filter(p=>p.k==='Sanja').map(p=>p.i));
+  let jumlahMasuk = 0;
+  Object.keys(sesiScan.records).forEach(pidStr=>{
+    const pid = parseInt(pidStr,10);
+    if(!anggotaSanja.has(pid)) return; // hanya ambil yang memang anggota Sanja
+    const recScan = sesiScan.records[pid];
+    if(recScan.status !== 'Hadir' || !recScan.time) return; // Izin/Sakit/Alpa dari Scan tidak diambil otomatis, biar dipilih manual di sini kalau perlu
+    const existing = sesi.records[pid] || {};
+    const izin = existing.izin || false;
+    const autoStatus = hitungStatusOtomatis(recScan.time, sesi.jamMulai, sesi.jamBatasTelat, izin);
+    sesi.records[pid] = { status: autoStatus || existing.status || '', jam: recScan.time, izin, keterangan: existing.keterangan||'Auto dari tab Scan' };
+    jumlahMasuk++;
+  });
+
+  saveDB();
+  syncJamInputsFromSesi();
+  renderPsInputList();
+  renderRankingSanja();
+  showToast(true, `✓ ${jumlahMasuk} jam hadir dari tab Scan berhasil diambil ke sesi ini`);
+}
+function populatePsSesiSelect(){
+  const sel = document.getElementById('psSesiSelect');
+  const tanggalList = Object.keys(DB.sanjaSesi).sort().reverse();
+  sel.innerHTML = tanggalList.length
+    ? tanggalList.map(t=>`<option value="${t}">${fmtDateLabel(t)}</option>`).join('')
+    : '<option value="">-- Belum ada sesi, buat sesi baru --</option>';
+}
+function buatSesiSanjaBaru(){
+  const tgl = document.getElementById('psTanggal').value || todayStr();
+  if(!DB.sanjaSesi[tgl]) DB.sanjaSesi[tgl] = { tanggal: tgl, jamMulai:'', jamBatasTelat:'', records:{} };
+  saveDB();
+  populatePsSesiSelect();
+  document.getElementById('psSesiSelect').value = tgl;
+  syncJamInputsFromSesi();
+  renderPsInputList();
+  showToast(true, '✓ Sesi '+fmtDateLabel(tgl)+' siap diisi');
+}
+// Ambil jamMulai/jamBatasTelat sesi yang lagi dipilih, tampilkan di 2 input jam di atas.
+function syncJamInputsFromSesi(){
+  const tgl = document.getElementById('psSesiSelect').value;
+  const sesi = DB.sanjaSesi[tgl];
+  document.getElementById('psJamMulai').value = sesi ? (sesi.jamMulai||'') : '';
+  document.getElementById('psJamBatasTelat').value = sesi ? (sesi.jamBatasTelat||'') : '';
+}
+// Simpan jam sesi begitu pengurus mengisi/ubah, lalu hitung ulang status semua orang yang sudah ada jam hadirnya.
+function simpanJamSesiDanRefresh(){
+  const tgl = document.getElementById('psSesiSelect').value;
+  const sesi = DB.sanjaSesi[tgl];
+  if(!sesi) return;
+  sesi.jamMulai = document.getElementById('psJamMulai').value || '';
+  sesi.jamBatasTelat = document.getElementById('psJamBatasTelat').value || '';
+  // Hitung ulang status otomatis untuk semua record yang punya jam hadir tapi belum di-override manual
+  Object.keys(sesi.records).forEach(pid=>{
+    const rec = sesi.records[pid];
+    if(rec.jam){
+      const autoStatus = hitungStatusOtomatis(rec.jam, sesi.jamMulai, sesi.jamBatasTelat, rec.izin);
+      if(autoStatus) rec.status = autoStatus;
+    }
+  });
+  saveDB();
+  renderPsInputList();
+  renderRankingSanja();
+}
+function renderPsInputList(){
+  const tgl = document.getElementById('psSesiSelect').value;
+  const box = document.getElementById('psInputList');
+  if(!tgl || !DB.sanjaSesi[tgl]){ box.innerHTML = '<p style="color:var(--ink-soft);">Pilih atau buat sesi dulu.</p>'; return; }
+  const sesi = DB.sanjaSesi[tgl];
+  const anggota = ROSTER.filter(p=>p.k==='Sanja').sort((a,b)=>a.n.localeCompare(b.n));
+  box.innerHTML = anggota.map(p=>{
+    const rec = sesi.records[p.i] || {status:'', jam:'', izin:false, keterangan:''};
+    const badgeColor = rec.status ? (SANJA_POIN[rec.status]>=10 ? 'var(--accent-dark)' : (SANJA_POIN[rec.status]>=3 ? 'var(--warn)' : 'var(--bad)')) : 'var(--gray)';
+    const badgeBg = rec.status ? (SANJA_POIN[rec.status]>=10 ? 'var(--accent-soft)' : (SANJA_POIN[rec.status]>=3 ? 'var(--warn-soft)' : 'var(--bad-soft)')) : 'var(--gray-soft)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;" data-row-pid="${p.i}">
+      <div style="flex:1.4;min-width:130px;font-size:13.5px;font-weight:600;">${p.n}</div>
+      <input type="time" style="flex:1;min-width:110px;" data-pid="${p.i}" class="psJamInput" value="${rec.jam||''}" placeholder="Jam hadir">
+      <label style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-soft);white-space:nowrap;">
+        <input type="checkbox" data-pid="${p.i}" class="psIzinCheck" ${rec.izin?'checked':''}> izin
+      </label>
+      <select style="flex:1.2;min-width:150px;" data-pid="${p.i}" class="psStatusSelect">
+        <option value="">-- pilih status --</option>
+        ${SANJA_STATUS_LIST.map(s=>`<option value="${s}" ${rec.status===s?'selected':''}>${s} (${SANJA_POIN[s]} poin)</option>`).join('')}
+      </select>
+      <span class="badge" style="background:${badgeBg};color:${badgeColor};min-width:56px;text-align:center;">${rec.status ? (SANJA_POIN[rec.status]+' poin') : '—'}</span>
+    </div>`;
+  }).join('');
+
+  jadikanSemuaJam24(box); // pastikan semua input jam hadir yang baru di-render pakai format 24 jam (00-23)
+
+  // Isi jam hadir -> otomatis hitung status (kecuali kalau pengurus sudah pilih manual sebelumnya lewat select)
+  box.querySelectorAll('.psJamInput').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const pid = parseInt(inp.dataset.pid);
+      const izin = box.querySelector(`.psIzinCheck[data-pid="${pid}"]`).checked;
+      const existing = sesi.records[pid] || {};
+      const autoStatus = hitungStatusOtomatis(inp.value, sesi.jamMulai, sesi.jamBatasTelat, izin);
+      sesi.records[pid] = { status: autoStatus || existing.status || '', jam: inp.value, izin, keterangan: existing.keterangan||'' };
+      saveDB();
+      renderPsInputList();
+      renderRankingSanja();
+    });
+  });
+  // Checkbox izin -> hitung ulang status kalau sudah ada jam hadir
+  box.querySelectorAll('.psIzinCheck').forEach(chk=>{
+    chk.addEventListener('change', ()=>{
+      const pid = parseInt(chk.dataset.pid);
+      const existing = sesi.records[pid] || {status:'', jam:'', izin:false, keterangan:''};
+      const autoStatus = hitungStatusOtomatis(existing.jam, sesi.jamMulai, sesi.jamBatasTelat, chk.checked);
+      sesi.records[pid] = { ...existing, izin: chk.checked, status: autoStatus || existing.status };
+      saveDB();
+      renderPsInputList();
+      renderRankingSanja();
+    });
+  });
+  // Select status tetap bisa dipakai untuk override manual (misal Tidak Hadir tanpa isi jam)
+  box.querySelectorAll('.psStatusSelect').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const pid = parseInt(sel.dataset.pid);
+      const existing = sesi.records[pid] || {jam:'', izin:false, keterangan:''};
+      sesi.records[pid] = { ...existing, status: sel.value };
+      saveDB();
+      renderPsInputList();
+      renderRankingSanja();
+    });
+  });
+}
+function populatePsBulanSelect(){
+  const sel = document.getElementById('psBulan');
+  const bulanSet = new Set();
+  Object.keys(DB.sanjaSesi||{}).forEach(t=> bulanSet.add(t.substring(0,7)));
+  bulanSet.add(todayStr().substring(0,7));
+  const list = Array.from(bulanSet).sort().reverse();
+  sel.innerHTML = list.map(b=>`<option value="${b}">${formatBulanLabel(b)}</option>`).join('');
+}
+function hitungPoinSanjaBulan(bulanKey){
+  const anggota = ROSTER.filter(p=>p.k==='Sanja');
+  const sesiBulanIni = Object.values(DB.sanjaSesi||{}).filter(s=> s.tanggal.substring(0,7)===bulanKey);
+  const hasil = anggota.map(p=>{
+    let totalPoin=0, jumlahSesiIkut=0, jumlahHadirPenuh=0;
+    sesiBulanIni.forEach(s=>{
+      const rec = s.records[p.i];
+      if(rec && rec.status){
+        totalPoin += SANJA_POIN[rec.status] ?? 0;
+        jumlahSesiIkut++;
+        if(rec.status==='Tepat Waktu') jumlahHadirPenuh++;
+      }
+    });
+    return { p, totalPoin, jumlahSesi: sesiBulanIni.length, jumlahSesiIkut, kehadiranPenuh: jumlahHadirPenuh===sesiBulanIni.length && sesiBulanIni.length>0 };
+  });
+  hasil.sort((a,b)=> b.totalPoin - a.totalPoin);
+  hasil.forEach((h,idx)=> h.rank = idx+1);
+  return hasil;
+}
+function renderRankingSanja(){
+  const bulanKey = document.getElementById('psBulan').value || todayStr().substring(0,7);
+  const hasil = hitungPoinSanjaBulan(bulanKey);
+  const n = hasil.length;
+  const rc = document.getElementById('psRankingContent');
+  const top5 = hasil.filter(h=>h.rank<=5);
+  const bottom5 = hasil.filter(h=>h.rank> n-5);
+  rc.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;background:var(--accent-soft);border-radius:10px;padding:12px;">
+        <h4 style="margin:0 0 8px;color:var(--accent-dark);">🏅 5 Ranking Teratas (Hadiah)</h4>
+        ${top5.map(h=>`<div style="font-size:13px;padding:4px 0;">#${h.rank} ${h.p.n} — <b>${h.totalPoin} poin</b> ${h.kehadiranPenuh?'🎉 kehadiran penuh (reward makan-makan)':''}</div>`).join('') || '<p style="color:var(--ink-soft);font-size:12px;">Belum ada data.</p>'}
+      </div>
+      <div style="flex:1;min-width:220px;background:var(--bad-soft);border-radius:10px;padding:12px;">
+        <h4 style="margin:0 0 8px;color:var(--bad);">⚠️ 5 Ranking Terbawah (Kafaroh/Hukuman)</h4>
+        ${bottom5.map(h=>`<div style="font-size:13px;padding:4px 0;">#${h.rank} ${h.p.n} — <b>${h.totalPoin} poin</b></div>`).join('') || '<p style="color:var(--ink-soft);font-size:12px;">Belum ada data.</p>'}
+      </div>
+    </div>`;
+  const tbl = document.getElementById('tabelPoinSanja');
+  tbl.innerHTML = `<tr><th>Rank</th><th>Nama</th><th>Total Poin</th><th>Sesi Diikuti</th><th>Dari Total Sesi</th><th>Kehadiran Penuh</th></tr>
+    ${hasil.map(h=>`<tr>
+      <td>${h.rank}</td><td>${h.p.n}</td><td><b>${h.totalPoin}</b></td>
+      <td>${h.jumlahSesiIkut}</td><td>${h.jumlahSesi}</td>
+      <td>${h.kehadiranPenuh?'✅':'-'}</td>
+    </tr>`).join('')}`;
+}
+function exportPoinSanjaXlsx(){
+  const bulanKey = document.getElementById('psBulan').value || todayStr().substring(0,7);
+  const hasil = hitungPoinSanjaBulan(bulanKey);
+  const data = hasil.map(h=>({
+    Rank: h.rank,
+    Nama: h.p.n,
+    'Total Poin': h.totalPoin,
+    'Sesi Diikuti': h.jumlahSesiIkut,
+    'Dari Total Sesi': h.jumlahSesi,
+    'Kehadiran Penuh': h.kehadiranPenuh ? 'Ya' : 'Tidak'
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Poin Sanja');
+  XLSX.writeFile(wb, 'poin-sanja-'+bulanKey+'.xlsx');
+}
+
 /* ---------- STRUKTUR PENGURUS ---------- */
 const KELOMPOK_STRUKTUR = ['Al Muhajirin','Bojong Koneng','Kamurang','Sanja','Sentul','Tarikolot'];
 // Setiap jabatan sekarang bisa diisi banyak orang (1 s/d N), tinggal klik "+ Tambah Orang"
@@ -2661,6 +3402,7 @@ function saveStrukturPengurus(){
 let chartDesaTrendInstance = null;
 let chartKelTrendInstance = null;
 let chartKelCompareInstance = null;
+let chartKelDiDesaTrendInstance = null;
 
 function getAllBulanKeys(){
   const bulanSet = new Set();
@@ -2690,6 +3432,25 @@ function hitungPctKelompokBulan(bulanKey, kelompokFilter){
     const anggotaKelompok = ROSTER.filter(p=>p.k===s.kelompok);
     const jumlahHadir = Object.values(s.records).filter(r=>r.status==='Hadir').length;
     totalHadir += jumlahHadir;
+    totalSlot += anggotaKelompok.length;
+  });
+  return totalSlot>0 ? Math.round((totalHadir/totalSlot)*1000)/10 : 0;
+}
+
+// Persentase kehadiran anggota kelompok K di SESI DESA (bukan sesi kelompok), per bulan.
+// = (jumlah orang dari kelompok K yang Hadir di semua sesi desa bulan itu) / (jumlah anggota kelompok K x jumlah sesi desa bulan itu)
+function hitungPctKelompokDiDesaBulan(bulanKey, kelompokFilter){
+  const sesiDesaBulanIni = Object.entries(DB.sessions||{}).filter(([tgl])=> tgl.substring(0,7)===bulanKey);
+  if(sesiDesaBulanIni.length===0) return null;
+  const anggotaKelompok = ROSTER.filter(p=>p.k===kelompokFilter);
+  if(anggotaKelompok.length===0) return null;
+
+  let totalHadir=0, totalSlot=0;
+  sesiDesaBulanIni.forEach(([tgl,s])=>{
+    anggotaKelompok.forEach(p=>{
+      const r = s.records[p.i];
+      if(r && r.status==='Hadir') totalHadir++;
+    });
     totalSlot += anggotaKelompok.length;
   });
   return totalSlot>0 ? Math.round((totalHadir/totalSlot)*1000)/10 : 0;
@@ -2760,6 +3521,44 @@ function initDashboardTab(){
     data:{ labels:KELOMPOK_STRUKTUR, datasets:[{ label:'% Kehadiran '+formatBulanLabel(bulanIniKey), data:compareData, backgroundColor:compareColors }]},
     options:{ responsive:true, scales:{ y:{ min:0, max:100, ticks:{callback:v=>v+'%'} } }, plugins:{legend:{display:false}} }
   });
+
+  // === PERSENTASE KEHADIRAN TIAP KELOMPOK DI PENGAJIAN DESA, PER BULAN ===
+  const warnaKelompok = { 'Al Muhajirin':'#2f6b4f','Bojong Koneng':'#b3691c','Kamurang':'#2968a8','Sanja':'#5b3fa0','Sentul':'#a13c3c','Tarikolot':'#0f766e' };
+  const kelDiDesaDatasets = KELOMPOK_STRUKTUR.map(k=>({
+    label: k,
+    data: bulanKeys.map(bk=> hitungPctKelompokDiDesaBulan(bk,k)),
+    borderColor: warnaKelompok[k] || '#888',
+    backgroundColor: (warnaKelompok[k]||'#888')+'22',
+    tension:0.3,
+    spanGaps:true
+  }));
+
+  if(chartKelDiDesaTrendInstance) chartKelDiDesaTrendInstance.destroy();
+  const canvasKelDiDesa = document.getElementById('chartKelDiDesaTrend');
+  if(canvasKelDiDesa){
+    chartKelDiDesaTrendInstance = new Chart(canvasKelDiDesa, {
+      type:'line',
+      data:{ labels:bulanLabels, datasets:kelDiDesaDatasets },
+      options:{ responsive:true, scales:{ y:{ min:0, max:100, ticks:{callback:v=>v+'%'} } }, plugins:{legend:{position:'bottom'}} }
+    });
+  }
+
+  // Tabel detail: baris = bulan, kolom = tiap kelompok (persentase + jumlah hadir/total)
+  const tabelKelDiDesaWrap = document.getElementById('tabelKelDiDesaWrap');
+  if(tabelKelDiDesaWrap){
+    let html = `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <tr style="background:var(--gray-soft);"><th style="padding:8px;text-align:left;">Bulan</th>${KELOMPOK_STRUKTUR.map(k=>`<th style="padding:8px;">${k}</th>`).join('')}</tr>`;
+    bulanKeys.forEach((bk,idx)=>{
+      html += `<tr style="border-bottom:1px solid var(--line);"><td style="padding:8px;">${bulanLabels[idx]}</td>`;
+      KELOMPOK_STRUKTUR.forEach(k=>{
+        const pct = hitungPctKelompokDiDesaBulan(bk,k);
+        html += `<td style="padding:8px;text-align:center;">${pct!==null? pct+'%' : '-'}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</table></div>`;
+    tabelKelDiDesaWrap.innerHTML = html;
+  }
   
   // === TABEL RINGKASAN ===
   let tableHtml = `<h3 style="color:var(--accent-dark);font-size:14px;">📋 Ringkasan Data per Bulan</h3>
@@ -3156,7 +3955,11 @@ function pullFromGoogleSheets(tanggalKey){
       const existing = targetSession.records[pid];
       // Hanya update kalau belum ada, atau data dari Sheets lebih baru (beda status/jam)
       if(!existing || existing.status !== rec.status || existing.time !== rec.jam){
-        targetSession.records[pid] = { status: rec.status, time: rec.jam };
+        targetSession.records[pid] = {
+          status: rec.status,
+          time: rec.jam,
+          kategori: tentukanKategoriKehadiran(rec.jam, targetSession.jamMulai, targetSession.jamBatasTelat)
+        };
         adaPerubahan = true;
       }
     });
@@ -3211,6 +4014,16 @@ function pullSesiConfig(sesiKey){
       session.autoTutupJam = cfg.autoTutupJam;
       berubah = true;
     }
+    let jamBerubah = false;
+    if(cfg.jamMulai && session.jamMulai !== cfg.jamMulai){
+      session.jamMulai = cfg.jamMulai;
+      berubah = true; jamBerubah = true;
+    }
+    if(cfg.jamBatasTelat && session.jamBatasTelat !== cfg.jamBatasTelat){
+      session.jamBatasTelat = cfg.jamBatasTelat;
+      berubah = true; jamBerubah = true;
+    }
+    if(jamBerubah) hitungUlangSemuaStatusSesi(session);
     if(cfg.closed && !session.closed){
       ROSTER.forEach(p=>{ if(!session.records[p.i]) session.records[p.i] = {status:'Alpa', time:''}; });
       session.closed = true;
@@ -3220,6 +4033,8 @@ function pullSesiConfig(sesiKey){
       saveDB();
       if(currentSessionKey === sesiKey){
         if(typeof document.getElementById('sesiAutoTutupJam').value !== 'undefined') document.getElementById('sesiAutoTutupJam').value = session.autoTutupJam||'';
+        if(document.getElementById('sesiJamMulai')) document.getElementById('sesiJamMulai').value = session.jamMulai||'';
+        if(document.getElementById('sesiJamBatasTelat')) document.getElementById('sesiJamBatasTelat').value = session.jamBatasTelat||'';
         renderAutoTutupStatus();
         renderScanStats();
         renderManualList();
@@ -3269,6 +4084,7 @@ initCetak();
 initScan();
 initRekap();
 renderScanTab();
+jadikanSemuaJam24(document); // pastikan semua input jam (auto-tutup, jam mulai, batas telat, manual) pakai format 24 jam
 startAutoSync(); // Mulai auto pull dari Google Sheets (kalau URL sudah pernah di-setup)
 </script>
 </body>
